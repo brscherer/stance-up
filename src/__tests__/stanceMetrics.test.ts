@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateBaseWidth, evaluateStanceLength } from '../analysis/stanceMetrics';
+import { evaluateBaseWidth, evaluateKneeSoftness, evaluateStanceLength } from '../analysis/stanceMetrics';
 import { POSE_LANDMARKS } from '../pose/landmarks';
 import { createStanceLandmarkFixture } from './fixtureHelpers';
 
@@ -77,5 +77,43 @@ describe('evaluateStanceLength', () => {
     landmarks[POSE_LANDMARKS.RIGHT_ANKLE] = { ...landmarks[POSE_LANDMARKS.RIGHT_ANKLE], visibility: 0.1 };
 
     expect(evaluateStanceLength(landmarks)).toMatchObject({ status: 'unknown', confidence: 0 });
+  });
+});
+
+describe('evaluateKneeSoftness', () => {
+  it('scores the default fixture as good knee softness', () => {
+    const metric = evaluateKneeSoftness(createStanceLandmarkFixture({ stance: 'orthodox' }));
+
+    expect(metric).toMatchObject({ id: 'knee-softness', status: 'good' });
+    expect(metric.score).toBeGreaterThanOrEqual(85);
+  });
+
+  it('warns when both knees appear too straight', () => {
+    const landmarks = createStanceLandmarkFixture({ stance: 'orthodox' });
+    landmarks[POSE_LANDMARKS.LEFT_KNEE] = { ...landmarks[POSE_LANDMARKS.LEFT_KNEE], x: 0.44, y: 0.685 };
+    landmarks[POSE_LANDMARKS.RIGHT_KNEE] = { ...landmarks[POSE_LANDMARKS.RIGHT_KNEE], x: 0.58, y: 0.725 };
+
+    const metric = evaluateKneeSoftness(landmarks);
+
+    expect(metric.status).toBe('bad');
+    expect(metric.correction).toMatch(/soften/i);
+  });
+
+  it('warns when the stance is too deep', () => {
+    const landmarks = createStanceLandmarkFixture({ stance: 'orthodox' });
+    landmarks[POSE_LANDMARKS.LEFT_KNEE] = { ...landmarks[POSE_LANDMARKS.LEFT_KNEE], x: 0.34, y: 0.72 };
+    landmarks[POSE_LANDMARKS.RIGHT_KNEE] = { ...landmarks[POSE_LANDMARKS.RIGHT_KNEE], x: 0.72, y: 0.78 };
+
+    const metric = evaluateKneeSoftness(landmarks);
+
+    expect(metric.status).toBe('warn');
+    expect(metric.correction).toMatch(/rise/i);
+  });
+
+  it('returns unknown when knee landmarks are unavailable', () => {
+    const landmarks = createStanceLandmarkFixture({ stance: 'orthodox' });
+    landmarks[POSE_LANDMARKS.LEFT_KNEE] = { ...landmarks[POSE_LANDMARKS.LEFT_KNEE], visibility: 0.1 };
+
+    expect(evaluateKneeSoftness(landmarks)).toMatchObject({ status: 'unknown', confidence: 0 });
   });
 });

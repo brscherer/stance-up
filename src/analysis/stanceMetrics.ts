@@ -1,6 +1,6 @@
 import type { PoseLandmark, StanceMetric } from './types';
 import { POSE_LANDMARKS } from '../pose/landmarks';
-import { getBodyScale, getVisibleLandmark } from '../pose/normalizeLandmarks';
+import { getBodyScale, getVisibleLandmark, type VisibleLandmark } from '../pose/normalizeLandmarks';
 
 function unknownMetric(id: string, label: string, message: string): StanceMetric {
   return {
@@ -23,6 +23,18 @@ function buildMetric(
   correction?: string,
 ): StanceMetric {
   return { id, label, status, score, confidence: 1, message, correction };
+}
+
+function perpendicularDistance(point: VisibleLandmark, lineStart: VisibleLandmark, lineEnd: VisibleLandmark): number {
+  const numerator = Math.abs(
+    (lineEnd.y - lineStart.y) * point.x -
+      (lineEnd.x - lineStart.x) * point.y +
+      lineEnd.x * lineStart.y -
+      lineEnd.y * lineStart.x,
+  );
+  const denominator = Math.hypot(lineEnd.y - lineStart.y, lineEnd.x - lineStart.x);
+
+  return denominator === 0 ? 0 : numerator / denominator;
 }
 
 export function evaluateBaseWidth(landmarks: PoseLandmark[]): StanceMetric {
@@ -97,4 +109,47 @@ export function evaluateStanceLength(landmarks: PoseLandmark[]): StanceMetric {
   }
 
   return buildMetric('stance-length', 'Stance length', 'good', 92, 'Your front-to-back stance length looks mobile.');
+}
+
+export function evaluateKneeSoftness(landmarks: PoseLandmark[]): StanceMetric {
+  const leftHip = getVisibleLandmark(landmarks, POSE_LANDMARKS.LEFT_HIP);
+  const rightHip = getVisibleLandmark(landmarks, POSE_LANDMARKS.RIGHT_HIP);
+  const leftKnee = getVisibleLandmark(landmarks, POSE_LANDMARKS.LEFT_KNEE);
+  const rightKnee = getVisibleLandmark(landmarks, POSE_LANDMARKS.RIGHT_KNEE);
+  const leftAnkle = getVisibleLandmark(landmarks, POSE_LANDMARKS.LEFT_ANKLE);
+  const rightAnkle = getVisibleLandmark(landmarks, POSE_LANDMARKS.RIGHT_ANKLE);
+  const scale = getBodyScale(landmarks);
+
+  const required = [leftHip, rightHip, leftKnee, rightKnee, leftAnkle, rightAnkle];
+  if (required.some((landmark) => !landmark.visible) || scale.torsoLength === 0) {
+    return unknownMetric('knee-softness', 'Knee softness', 'Not enough hip, knee, or ankle visibility to judge knee bend.');
+  }
+
+  const leftBend = perpendicularDistance(leftKnee, leftHip, leftAnkle) / scale.torsoLength;
+  const rightBend = perpendicularDistance(rightKnee, rightHip, rightAnkle) / scale.torsoLength;
+  const averageBend = (leftBend + rightBend) / 2;
+
+  if (averageBend < 0.06) {
+    return buildMetric(
+      'knee-softness',
+      'Knee softness',
+      'bad',
+      35,
+      'Your knees appear too straight for an athletic stance.',
+      'Soften your knees. Think athletic bounce, not standing tall.',
+    );
+  }
+
+  if (averageBend > 0.5) {
+    return buildMetric(
+      'knee-softness',
+      'Knee softness',
+      'warn',
+      65,
+      'Your stance appears deeper than needed for mobile Muay Thai movement.',
+      'Rise a little. Muay Thai stance should be mobile, not a squat.',
+    );
+  }
+
+  return buildMetric('knee-softness', 'Knee softness', 'good', 92, 'Your knees look softly bent and ready to move.');
 }

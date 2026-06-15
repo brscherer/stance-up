@@ -34,8 +34,8 @@ export function createStanceLandmarkFixture({ stance }: FixtureOptions): PoseLan
   landmarks[POSE_LANDMARKS.LEFT_WRIST] = landmark(0.46, 0.25, -0.04);
   landmarks[POSE_LANDMARKS.RIGHT_WRIST] = landmark(0.55, 0.25, -0.04);
 
-  landmarks[POSE_LANDMARKS.LEFT_KNEE] = landmark(isOrthodox ? leadX : rearX, isOrthodox ? 0.69 : 0.74, 0.01);
-  landmarks[POSE_LANDMARKS.RIGHT_KNEE] = landmark(isOrthodox ? rearX : leadX, isOrthodox ? 0.74 : 0.69, 0.01);
+  landmarks[POSE_LANDMARKS.LEFT_KNEE] = landmark(isOrthodox ? leadX - 0.04 : rearX - 0.04, isOrthodox ? 0.69 : 0.74, 0.01);
+  landmarks[POSE_LANDMARKS.RIGHT_KNEE] = landmark(isOrthodox ? rearX + 0.04 : leadX + 0.04, isOrthodox ? 0.74 : 0.69, 0.01);
   landmarks[POSE_LANDMARKS.LEFT_ANKLE] = landmark(isOrthodox ? leadX : rearX, isOrthodox ? leadFootY : rearFootY, 0.02);
   landmarks[POSE_LANDMARKS.RIGHT_ANKLE] = landmark(isOrthodox ? rearX : leadX, isOrthodox ? rearFootY : leadFootY, 0.02);
   landmarks[POSE_LANDMARKS.LEFT_HEEL] = landmark(isOrthodox ? leadX - 0.01 : rearX - 0.01, isOrthodox ? leadFootY + 0.02 : rearFootY + 0.02, 0.02);
