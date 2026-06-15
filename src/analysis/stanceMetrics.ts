@@ -153,3 +153,99 @@ export function evaluateKneeSoftness(landmarks: PoseLandmark[]): StanceMetric {
 
   return buildMetric('knee-softness', 'Knee softness', 'good', 92, 'Your knees look softly bent and ready to move.');
 }
+
+export function evaluateGuardPosition(landmarks: PoseLandmark[]): StanceMetric {
+  const leftWrist = getVisibleLandmark(landmarks, POSE_LANDMARKS.LEFT_WRIST);
+  const rightWrist = getVisibleLandmark(landmarks, POSE_LANDMARKS.RIGHT_WRIST);
+  const nose = getVisibleLandmark(landmarks, POSE_LANDMARKS.NOSE);
+  const leftShoulder = getVisibleLandmark(landmarks, POSE_LANDMARKS.LEFT_SHOULDER);
+  const rightShoulder = getVisibleLandmark(landmarks, POSE_LANDMARKS.RIGHT_SHOULDER);
+
+  if (![leftWrist, rightWrist, nose, leftShoulder, rightShoulder].every((landmark) => landmark.visible)) {
+    return unknownMetric('guard-position', 'Guard position', 'Not enough hand, head, or shoulder visibility to judge guard position.');
+  }
+
+  const shoulderLineY = (leftShoulder.y + rightShoulder.y) / 2;
+  const guardLimitY = nose.y + (shoulderLineY - nose.y) * 0.75;
+  const droppedHands = [leftWrist, rightWrist].filter((wrist) => wrist.y > guardLimitY).length;
+
+  if (droppedHands > 0) {
+    return buildMetric(
+      'guard-position',
+      'Guard position',
+      'bad',
+      droppedHands === 2 ? 30 : 45,
+      droppedHands === 2 ? 'Both hands are dropping below your defensive line.' : 'One hand is dropping below your defensive line.',
+      'Keep your guard active with your hands near your cheek and chin line after every movement.',
+    );
+  }
+
+  return buildMetric('guard-position', 'Guard position', 'good', 92, 'Your hands are high enough to protect your head.');
+}
+
+export function evaluateHeadPosture(landmarks: PoseLandmark[]): StanceMetric {
+  const nose = getVisibleLandmark(landmarks, POSE_LANDMARKS.NOSE);
+  const leftShoulder = getVisibleLandmark(landmarks, POSE_LANDMARKS.LEFT_SHOULDER);
+  const rightShoulder = getVisibleLandmark(landmarks, POSE_LANDMARKS.RIGHT_SHOULDER);
+  const scale = getBodyScale(landmarks);
+
+  if (![nose, leftShoulder, rightShoulder].every((landmark) => landmark.visible) || scale.shoulderWidth === 0) {
+    return unknownMetric('head-posture', 'Head posture', 'Not enough head or shoulder visibility to judge head posture.');
+  }
+
+  const shoulderCenterX = (leftShoulder.x + rightShoulder.x) / 2;
+  const lateralDriftRatio = Math.abs(nose.x - shoulderCenterX) / scale.shoulderWidth;
+
+  if (lateralDriftRatio > 0.75) {
+    return buildMetric(
+      'head-posture',
+      'Head posture',
+      'warn',
+      65,
+      'Your head appears to drift away from your stance centerline.',
+      'Stack your head over your stance and keep your chin slightly tucked instead of reaching.',
+    );
+  }
+
+  return buildMetric('head-posture', 'Head posture', 'good', 92, 'Your head looks stacked over your stance.');
+}
+
+export function evaluateShoulderHipAlignment(landmarks: PoseLandmark[]): StanceMetric {
+  const leftShoulder = getVisibleLandmark(landmarks, POSE_LANDMARKS.LEFT_SHOULDER);
+  const rightShoulder = getVisibleLandmark(landmarks, POSE_LANDMARKS.RIGHT_SHOULDER);
+  const leftHip = getVisibleLandmark(landmarks, POSE_LANDMARKS.LEFT_HIP);
+  const rightHip = getVisibleLandmark(landmarks, POSE_LANDMARKS.RIGHT_HIP);
+  const scale = getBodyScale(landmarks);
+
+  if (![leftShoulder, rightShoulder, leftHip, rightHip].every((landmark) => landmark.visible) || scale.hipWidth === 0) {
+    return unknownMetric('shoulder-hip-alignment', 'Shoulder and hip alignment', 'Not enough shoulder or hip visibility to judge stance angle.');
+  }
+
+  const shoulderWidth = Math.abs(leftShoulder.x - rightShoulder.x);
+  const hipWidth = Math.abs(leftHip.x - rightHip.x);
+  const ratio = shoulderWidth / hipWidth;
+
+  if (ratio < 0.65) {
+    return buildMetric(
+      'shoulder-hip-alignment',
+      'Shoulder and hip alignment',
+      'warn',
+      65,
+      'Your stance appears very sideways.',
+      'Open up enough to check kicks and throw rear-side weapons without being over-bladed.',
+    );
+  }
+
+  if (ratio < 1.15) {
+    return buildMetric(
+      'shoulder-hip-alignment',
+      'Shoulder and hip alignment',
+      'warn',
+      65,
+      'Your stance appears very square.',
+      'Angle your stance slightly so your rear side is protected while you stay ready to check kicks.',
+    );
+  }
+
+  return buildMetric('shoulder-hip-alignment', 'Shoulder and hip alignment', 'good', 92, 'Your shoulder and hip angle looks useful for Muay Thai stance.');
+}
