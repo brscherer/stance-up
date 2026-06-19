@@ -4,121 +4,121 @@ Working principle: keep every implementation step small, testable, and commit-fr
 
 ## Phase 0 - Repository setup
 
-[ ] 0.01 Verify repo is clean before implementation: `git status --short`.
-[ ] 0.02 Initialize the app with Vite React TypeScript in the existing repo.
-[ ] 0.03 Install core dependencies: React, Vite, TypeScript, MediaPipe Tasks Vision.
-[ ] 0.04 Install dev/test dependencies: Vitest, React Testing Library, jsdom, Playwright if needed later.
-[ ] 0.05 Add scripts: `dev`, `build`, `test`, `test:watch`, `lint`, `typecheck`.
-[ ] 0.06 Add a minimal README with setup and privacy note.
-[ ] 0.07 Run `npm install`, `npm run build`, and `npm test` to verify the baseline.
-[ ] 0.08 Commit: `chore: initialize react camera app`.
+[x] 0.01 Verify repo is clean before implementation: `git status --short`.
+[x] 0.02 Initialize the app with Vite React TypeScript in the existing repo.
+[x] 0.03 Install core dependencies: React, Vite, TypeScript, MediaPipe Tasks Vision.
+[x] 0.04 Install dev/test dependencies: Vitest, React Testing Library, jsdom, Playwright if needed later.
+[x] 0.05 Add scripts: `dev`, `build`, `test`, `test:watch`, `lint`, `typecheck`.
+[x] 0.06 Add a minimal README with setup and privacy note.
+[x] 0.07 Run `npm install`, `npm run build`, and `npm test` to verify the baseline.
+[x] 0.08 Commit: `chore: initialize react camera app`.
 
 ## Phase 1 - Domain model and synthetic fixtures
 
-[ ] 1.01 Create `src/analysis/types.ts` with stance, metric, and result types.
-[ ] 1.02 Create `src/pose/landmarks.ts` with named landmark indexes used by MediaPipe.
-[ ] 1.03 Create synthetic landmark fixture helpers for standing orthodox/southpaw poses.
-[ ] 1.04 Write tests proving fixture helpers produce required shoulders, hips, knees, ankles, elbows, wrists, and face landmarks.
-[ ] 1.05 Run tests and typecheck.
-[ ] 1.06 Commit: `test: add pose landmark fixtures`.
+[x] 1.01 Create `src/analysis/types.ts` with stance, metric, and result types.
+[x] 1.02 Create `src/pose/landmarks.ts` with named landmark indexes used by MediaPipe.
+[x] 1.03 Create synthetic landmark fixture helpers for standing orthodox/southpaw poses.
+[x] 1.04 Write tests proving fixture helpers produce required shoulders, hips, knees, ankles, elbows, wrists, and face landmarks.
+[x] 1.05 Run tests and typecheck.
+[x] 1.06 Commit: `test: add pose landmark fixtures`.
 
 ## Phase 2 - Landmark normalization
 
-[ ] 2.01 Create `src/pose/normalizeLandmarks.ts`.
-[ ] 2.02 Write failing tests for missing landmarks, low-confidence landmarks, and scale extraction.
-[ ] 2.03 Implement normalized landmark accessors with confidence checks.
-[ ] 2.04 Implement body scale references: shoulder width, hip width, torso length, ankle distance.
-[ ] 2.05 Ensure normalization returns unknown/low-confidence instead of throwing.
-[ ] 2.06 Run tests and typecheck.
-[ ] 2.07 Commit: `feat: normalize pose landmarks for stance analysis`.
+[x] 2.01 Create `src/pose/normalizeLandmarks.ts`.
+[x] 2.02 Write failing tests for missing landmarks, low-confidence landmarks, and scale extraction.
+[x] 2.03 Implement normalized landmark accessors with confidence checks.
+[x] 2.04 Implement body scale references: shoulder width, hip width, torso length, ankle distance.
+[x] 2.05 Ensure normalization returns unknown/low-confidence instead of throwing.
+[x] 2.06 Run tests and typecheck.
+[x] 2.07 Commit: `feat: normalize pose landmarks for stance analysis`.
 
 ## Phase 3 - Stance orientation
 
-[ ] 3.01 Create `src/analysis/stanceOrientation.ts`.
-[ ] 3.02 Write tests for user-selected orthodox and southpaw overriding auto-detection.
-[ ] 3.03 Write tests for auto-detect returning unknown when landmarks are insufficient.
-[ ] 3.04 Implement orientation detection from foot/hip/shoulder geometry.
-[ ] 3.05 Return orientation confidence with result.
-[ ] 3.06 Run tests and typecheck.
-[ ] 3.07 Commit: `feat: detect muay thai stance orientation`.
+[x] 3.01 Create `src/analysis/stanceOrientation.ts`.
+[x] 3.02 Write tests for user-selected orthodox and southpaw overriding auto-detection.
+[x] 3.03 Write tests for auto-detect returning unknown when landmarks are insufficient.
+[x] 3.04 Implement orientation detection from foot/hip/shoulder geometry.
+[x] 3.05 Return orientation confidence with result.
+[x] 3.06 Run tests and typecheck.
+[x] 3.07 Commit: `feat: detect muay thai stance orientation`.
 
 ## Phase 4 - Per-frame stance metrics
 
-[ ] 4.01 Create `src/analysis/stanceMetrics.ts`.
-[ ] 4.02 Add base-width tests: good, too narrow, too wide, unknown.
-[ ] 4.03 Implement base-width metric.
-[ ] 4.04 Add stance-length tests: good, too short/square, too long, unknown.
-[ ] 4.05 Implement stance-length metric.
-[ ] 4.06 Add knee-softness tests: good, locked, too deep, unknown.
-[ ] 4.07 Implement knee-softness metric using hip/knee/ankle angle approximation.
-[ ] 4.08 Add guard-position tests: both hands good, lead hand low, rear hand low, unknown.
-[ ] 4.09 Implement guard-position metric.
-[ ] 4.10 Add head-posture tests: good, forward drift, excessive upward tilt if measurable, unknown.
-[ ] 4.11 Implement head-posture metric conservatively.
-[ ] 4.12 Add shoulder/hip alignment tests: reasonable angle, too square, too bladed, unknown.
-[ ] 4.13 Implement shoulder/hip alignment metric.
-[ ] 4.14 Run tests and typecheck.
-[ ] 4.15 Commit: `feat: score muay thai stance metrics`.
+[x] 4.01 Create `src/analysis/stanceMetrics.ts`.
+[x] 4.02 Add base-width tests: good, too narrow, too wide, unknown.
+[x] 4.03 Implement base-width metric.
+[x] 4.04 Add stance-length tests: good, too short/square, too long, unknown.
+[x] 4.05 Implement stance-length metric.
+[x] 4.06 Add knee-softness tests: good, locked, too deep, unknown.
+[x] 4.07 Implement knee-softness metric using hip/knee/ankle angle approximation.
+[x] 4.08 Add guard-position tests: both hands good, lead hand low, rear hand low, unknown.
+[x] 4.09 Implement guard-position metric.
+[x] 4.10 Add head-posture tests: good, forward drift, excessive upward tilt if measurable, unknown.
+[x] 4.11 Implement head-posture metric conservatively.
+[x] 4.12 Add shoulder/hip alignment tests: reasonable angle, too square, too bladed, unknown.
+[x] 4.13 Implement shoulder/hip alignment metric.
+[x] 4.14 Run tests and typecheck.
+[x] 4.15 Commit: `feat: score muay thai stance metrics`.
 
 ## Phase 5 - Rolling-window analysis
 
-[ ] 5.01 Create `src/analysis/rollingWindow.ts`.
-[ ] 5.02 Write tests showing a single noisy frame does not dominate the result.
-[ ] 5.03 Write tests showing repeated hand drops reduce the guard score.
-[ ] 5.04 Implement fixed-duration frame buffer, initially 5 seconds.
-[ ] 5.05 Aggregate metric scores by confidence-weighted average.
-[ ] 5.06 Add stability metrics for ankle, hip, head, and hand drift over time.
-[ ] 5.07 Run tests and typecheck.
-[ ] 5.08 Commit: `feat: aggregate stance analysis over time`.
+[x] 5.01 Create `src/analysis/rollingWindow.ts`.
+[x] 5.02 Write tests showing a single noisy frame does not dominate the result.
+[x] 5.03 Write tests showing repeated hand drops reduce the guard score.
+[x] 5.04 Implement fixed-duration frame buffer, initially 5 seconds.
+[x] 5.05 Aggregate metric scores by confidence-weighted average.
+[x] 5.06 Add stability metrics for ankle, hip, head, and hand drift over time.
+[x] 5.07 Run tests and typecheck.
+[x] 5.08 Commit: `feat: aggregate stance analysis over time`.
 
 ## Phase 6 - Feedback and scoring
 
-[ ] 6.01 Create `src/analysis/scoring.ts` and `src/analysis/feedback.ts`.
-[ ] 6.02 Write tests for overall score calculation from metric scores and confidence.
-[ ] 6.03 Write tests that low-confidence metrics do not create harsh corrections.
-[ ] 6.04 Write tests that top cues are ranked by severity and confidence.
-[ ] 6.05 Implement overall score.
-[ ] 6.06 Implement issue ranking.
-[ ] 6.07 Implement cue copy for each metric and status.
-[ ] 6.08 Ensure output includes detailed correction text, not just labels.
-[ ] 6.09 Run tests and typecheck.
-[ ] 6.10 Commit: `feat: generate stance coaching feedback`.
+[x] 6.01 Create `src/analysis/scoring.ts` and `src/analysis/feedback.ts`.
+[x] 6.02 Write tests for overall score calculation from metric scores and confidence.
+[x] 6.03 Write tests that low-confidence metrics do not create harsh corrections.
+[x] 6.04 Write tests that top cues are ranked by severity and confidence.
+[x] 6.05 Implement overall score.
+[x] 6.06 Implement issue ranking.
+[x] 6.07 Implement cue copy for each metric and status.
+[x] 6.08 Ensure output includes detailed correction text, not just labels.
+[x] 6.09 Run tests and typecheck.
+[x] 6.10 Commit: `feat: generate stance coaching feedback`.
 
 ## Phase 7 - Camera and pose integration
 
-[ ] 7.01 Create `src/camera/cameraPermissions.ts`.
-[ ] 7.02 Create `src/camera/CameraView.tsx` with start/stop camera controls.
-[ ] 7.03 Add component tests for permission states where practical.
-[ ] 7.04 Create `src/pose/poseLandmarker.ts` to initialize MediaPipe Pose Landmarker.
-[ ] 7.05 Add graceful loading/error states for model initialization.
-[ ] 7.06 Connect video frames to pose estimation loop using `requestAnimationFrame`.
-[ ] 7.07 Throttle analysis if needed to keep UI responsive.
-[ ] 7.08 Confirm camera stream stops when component unmounts.
-[ ] 7.09 Run tests, typecheck, and build.
-[ ] 7.10 Commit: `feat: connect camera to pose landmarker`.
+[x] 7.01 Create `src/camera/cameraPermissions.ts`.
+[x] 7.02 Create `src/camera/CameraView.tsx` with start/stop camera controls.
+[x] 7.03 Add component tests for permission states where practical.
+[x] 7.04 Create `src/pose/poseLandmarker.ts` to initialize MediaPipe Pose Landmarker.
+[x] 7.05 Add graceful loading/error states for model initialization.
+[x] 7.06 Connect video frames to pose estimation loop using `requestAnimationFrame`.
+[x] 7.07 Throttle analysis if needed to keep UI responsive.
+[x] 7.08 Confirm camera stream stops when component unmounts.
+[x] 7.09 Run tests, typecheck, and build.
+[x] 7.10 Commit: `feat: connect camera to pose landmarker`.
 
 ## Phase 8 - Live UI
 
-[ ] 8.01 Create `src/ui/SetupChecklist.tsx`.
-[ ] 8.02 Create `src/ui/LiveOverlay.tsx` for canvas skeleton drawing.
-[ ] 8.03 Create `src/ui/ScorePanel.tsx` for score, top cue, and metric chips.
-[ ] 8.04 Add stance selector: orthodox, southpaw, auto.
-[ ] 8.05 Wire `App.tsx` flow: landing -> setup -> calibration -> live analysis.
-[ ] 8.06 Add copy explaining local-only processing and camera requirements.
-[ ] 8.07 Add responsive layout for phone and laptop screens.
-[ ] 8.08 Run tests, typecheck, and build.
-[ ] 8.09 Commit: `feat: add live stance coaching UI`.
+[x] 8.01 Create `src/ui/SetupChecklist.tsx`.
+[x] 8.02 Create `src/ui/LiveOverlay.tsx` for canvas skeleton drawing.
+[x] 8.03 Create `src/ui/ScorePanel.tsx` for score, top cue, and metric chips.
+[x] 8.04 Add stance selector: orthodox, southpaw, auto.
+[x] 8.05 Wire `App.tsx` flow: landing -> setup -> calibration -> live analysis.
+[x] 8.06 Add copy explaining local-only processing and camera requirements.
+[x] 8.07 Add responsive layout for phone and laptop screens.
+[x] 8.08 Run tests, typecheck, and build.
+[x] 8.09 Commit: `feat: add live stance coaching UI`.
 
 ## Phase 9 - Session summary
 
-[ ] 9.01 Create `src/ui/SessionSummary.tsx`.
-[ ] 9.02 Add start/stop session controls.
-[ ] 9.03 Track session average, best metric, worst metric, and top 3 recurring cues.
-[ ] 9.04 Store optional non-video session summary locally.
-[ ] 9.05 Add clear-session-data action.
-[ ] 9.06 Add tests for summary ranking logic.
-[ ] 9.07 Run tests, typecheck, and build.
-[ ] 9.08 Commit: `feat: summarize stance practice sessions`.
+[x] 9.01 Create `src/ui/SessionSummary.tsx`.
+[x] 9.02 Add start/stop session controls.
+[x] 9.03 Track session average, best metric, worst metric, and top 3 recurring cues.
+[x] 9.04 Store optional non-video session summary locally.
+[x] 9.05 Add clear-session-data action.
+[x] 9.06 Add tests for summary ranking logic.
+[x] 9.07 Run tests, typecheck, and build.
+[x] 9.08 Commit: `feat: summarize stance practice sessions`.
 
 ## Phase 10 - Manual validation and polish
 
@@ -135,14 +135,14 @@ Working principle: keep every implementation step small, testable, and commit-fr
 
 ## Definition of done for MVP
 
-[ ] User can run the app locally.
-[ ] Camera starts and stops correctly.
-[ ] Pose overlay appears when body is visible.
-[ ] User can select orthodox/southpaw/auto.
-[ ] App scores base width, stance length, knee softness, guard position, head posture, and stability.
-[ ] App shows detailed correction cues.
-[ ] App summarizes a short practice session.
-[ ] Missing landmarks reduce confidence instead of crashing.
-[ ] Pure analysis code has meaningful unit tests.
-[ ] Build passes.
-[ ] DESIGN.md is updated if implementation decisions change.
+[x] User can run the app locally.
+[x] Camera starts and stops correctly.
+[x] Pose overlay appears when body is visible.
+[x] User can select orthodox/southpaw/auto.
+[x] App scores base width, stance length, knee softness, guard position, head posture, and stability.
+[x] App shows detailed correction cues.
+[x] App summarizes a short practice session.
+[x] Missing landmarks reduce confidence instead of crashing.
+[x] Pure analysis code has meaningful unit tests.
+[x] Build passes.
+[x] DESIGN.md is updated if implementation decisions change.
