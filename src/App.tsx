@@ -4,6 +4,7 @@ import { SetupChecklist } from './ui/SetupChecklist';
 import { ScorePanel } from './ui/ScorePanel';
 import { SessionSummary } from './ui/SessionSummary';
 import { LocaleProvider, LocaleToggle, useLocale } from './i18n/LocaleProvider';
+import { useVoiceFeedback } from './audio/useVoiceFeedback';
 import type { StanceAnalysisResult, StanceSelection } from './analysis/types';
 
 type AppState = 'landing' | 'setup' | 'analyzing' | 'summary';
@@ -44,6 +45,8 @@ function AppContent() {
   const handleError = useCallback((err: string) => {
     setError(err);
   }, []);
+
+  useVoiceFeedback(latestResult, isSessionActive);
 
   if (state === 'landing') {
     return (

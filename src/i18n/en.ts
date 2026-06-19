@@ -144,6 +144,11 @@ const en: TranslationDict = {
     label: 'Stability:',
   },
 
+  voice: {
+    mute: 'Mute',
+    unmute: 'Unmute',
+  },
+
   feedback: {
     good0: 'Your stance looks solid — keep maintaining these fundamentals.',
     good1: 'Strong stance fundamentals. Stay consistent with this structure.',

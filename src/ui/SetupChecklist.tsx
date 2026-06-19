@@ -33,14 +33,11 @@ export function SetupChecklist({
         {t('setup.description')}
       </p>
 
-      <div className="setup-checklist" role="group" aria-label="Camera setup requirements">
+      <ul className="setup-tips" aria-label="Camera setup requirements">
         {checklistItems.map(item => (
-          <label key={item.id} className="checklist-item">
-            <input type="checkbox" />
-            <span>{item.label}</span>
-          </label>
+          <li key={item.id}>{item.label}</li>
         ))}
-      </div>
+      </ul>
 
       <div className="stance-selector">
         <label>

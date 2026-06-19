@@ -144,6 +144,11 @@ const ptBr: TranslationDict = {
     label: 'Estabilidade:',
   },
 
+  voice: {
+    mute: 'Silenciar',
+    unmute: 'Ativar som',
+  },
+
   feedback: {
     good0: 'Sua postura parece sólida — continue mantendo esses fundamentos.',
     good1: 'Fundamentos de postura fortes. Mantenha-se consistente com esta estrutura.',

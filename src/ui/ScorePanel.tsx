@@ -1,5 +1,7 @@
 import type { StanceMetric } from '../analysis/types';
 import { useLocale } from '../i18n/LocaleProvider';
+import { isVoiceMuted, setMuted } from '../audio/voiceFeedback';
+import { useState } from 'react';
 
 interface ScorePanelProps {
   overallScore: number;
@@ -19,6 +21,13 @@ function getStatusColor(status: StanceMetric['status']): string {
 
 export function ScorePanel({ overallScore, confidence, metrics, topCues }: ScorePanelProps) {
   const { t } = useLocale();
+  const [muted, setMutedState] = useState(isVoiceMuted());
+
+  const toggleMute = () => {
+    const next = !muted;
+    setMuted(next);
+    setMutedState(next);
+  };
 
   const statusLabels: Record<string, string> = {
     good: t('scorePanel.good'),
@@ -29,6 +38,17 @@ export function ScorePanel({ overallScore, confidence, metrics, topCues }: Score
 
   return (
     <div className="score-panel" role="region" aria-label={t('scorePanel.stanceAnalysis')}>
+      <div className="score-panel-header">
+        <span className="score-panel-title">{t('scorePanel.stanceAnalysis')}</span>
+        <button
+          className="voice-toggle"
+          onClick={toggleMute}
+          aria-label={muted ? t('voice.unmute') : t('voice.mute')}
+          title={muted ? t('voice.unmute') : t('voice.mute')}
+        >
+          {muted ? '🔇' : '🔊'}
+        </button>
+      </div>
       <div className="overall-score">
         <div className="score-circle" style={{ '--score-color': getStatusColor(
           overallScore >= 80 ? 'good' : overallScore >= 60 ? 'warn' : 'bad'
