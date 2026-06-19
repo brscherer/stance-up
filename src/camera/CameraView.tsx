@@ -8,6 +8,7 @@ import { detectStanceOrientation } from '../analysis/stanceOrientation';
 import { normalizeLandmarks } from '../pose/normalizeLandmarks';
 import type { PoseLandmark } from '../analysis/types';
 import { LiveOverlay } from '../ui/LiveOverlay';
+import { t } from '../i18n/t';
 
 interface CameraViewProps {
   onFrame: (result: StanceAnalysisResult) => void;
@@ -145,7 +146,7 @@ export function CameraView({ onFrame, stanceSelection, onError }: CameraViewProp
 
       animationFrameRef.current = requestAnimationFrame(processVideo);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to start camera';
+      const message = err instanceof Error ? err.message : t('camera.failedToStart');
       setError(message);
       onError?.(message);
     }
@@ -194,7 +195,7 @@ export function CameraView({ onFrame, stanceSelection, onError }: CameraViewProp
         <select
           value={selectedCameraId}
           onChange={e => switchCamera(e.target.value)}
-          aria-label="Select camera"
+          aria-label={t('camera.selectCamera')}
         >
           {cameras.map(cam => (
             <option key={cam.deviceId} value={cam.deviceId}>
@@ -202,7 +203,7 @@ export function CameraView({ onFrame, stanceSelection, onError }: CameraViewProp
             </option>
           ))}
         </select>
-        <button onClick={stopCamera}>Stop Camera</button>
+        <button onClick={stopCamera}>{t('camera.stopCamera')}</button>
       </div>
       {error && <div className="error" role="alert">{error}</div>}
     </div>

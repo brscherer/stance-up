@@ -1,28 +1,37 @@
 import type { PoseLandmark, StanceMetric } from './types';
 import { POSE_LANDMARKS } from '../pose/landmarks';
 import { getBodyScale, getVisibleLandmark, type VisibleLandmark } from '../pose/normalizeLandmarks';
+import { t } from '../i18n/t';
 
-function unknownMetric(id: string, label: string, message: string): StanceMetric {
+function unknownMetric(id: string, labelKey: string, messageKey: string): StanceMetric {
   return {
     id,
-    label,
+    label: t(labelKey),
     status: 'unknown',
     score: 0,
     confidence: 0,
-    message,
-    correction: 'Move so both feet are visible before judging this stance detail.',
+    message: t(messageKey),
+    correction: t('metrics.unknownCorrection'),
   };
 }
 
 function buildMetric(
   id: string,
-  label: string,
+  labelKey: string,
   status: StanceMetric['status'],
   score: number,
-  message: string,
-  correction?: string,
+  messageKey: string,
+  correctionKey?: string,
 ): StanceMetric {
-  return { id, label, status, score, confidence: 1, message, correction };
+  return {
+    id,
+    label: t(labelKey),
+    status,
+    score,
+    confidence: 1,
+    message: t(messageKey),
+    correction: correctionKey ? t(correctionKey) : undefined,
+  };
 }
 
 function perpendicularDistance(point: VisibleLandmark, lineStart: VisibleLandmark, lineEnd: VisibleLandmark): number {
@@ -43,7 +52,7 @@ export function evaluateBaseWidth(landmarks: PoseLandmark[]): StanceMetric {
   const scale = getBodyScale(landmarks);
 
   if (!leftAnkle.visible || !rightAnkle.visible || scale.shoulderWidth === 0) {
-    return unknownMetric('base-width', 'Base width', 'Not enough foot or shoulder visibility to judge base width.');
+    return unknownMetric('base-width', 'metrics.baseWidth.label', 'metrics.baseWidth.unknown');
   }
 
   const lateralWidth = Math.abs(leftAnkle.x - rightAnkle.x);
@@ -52,26 +61,26 @@ export function evaluateBaseWidth(landmarks: PoseLandmark[]): StanceMetric {
   if (widthRatio < 0.35) {
     return buildMetric(
       'base-width',
-      'Base width',
+      'metrics.baseWidth.label',
       'bad',
       35,
-      'Your feet appear too close together laterally.',
-      'Widen your base so your feet are not lined up and you feel harder to push over sideways.',
+      'metrics.baseWidth.bad',
+      'metrics.baseWidth.badCorrection',
     );
   }
 
   if (widthRatio > 1.9) {
     return buildMetric(
       'base-width',
-      'Base width',
+      'metrics.baseWidth.label',
       'warn',
       65,
-      'Your feet appear very wide laterally.',
-      'Bring your feet slightly closer so you can step quickly without feeling stuck.',
+      'metrics.baseWidth.warn',
+      'metrics.baseWidth.warnCorrection',
     );
   }
 
-  return buildMetric('base-width', 'Base width', 'good', 92, 'Your base width looks balanced for a Muay Thai stance.');
+  return buildMetric('base-width', 'metrics.baseWidth.label', 'good', 92, 'metrics.baseWidth.good');
 }
 
 export function evaluateStanceLength(landmarks: PoseLandmark[]): StanceMetric {
@@ -80,7 +89,7 @@ export function evaluateStanceLength(landmarks: PoseLandmark[]): StanceMetric {
   const scale = getBodyScale(landmarks);
 
   if (!leftAnkle.visible || !rightAnkle.visible || scale.torsoLength === 0) {
-    return unknownMetric('stance-length', 'Stance length', 'Not enough foot or torso visibility to judge stance length.');
+    return unknownMetric('stance-length', 'metrics.stanceLength.label', 'metrics.stanceLength.unknown');
   }
 
   const forwardLength = Math.abs(leftAnkle.y - rightAnkle.y);
@@ -89,26 +98,26 @@ export function evaluateStanceLength(landmarks: PoseLandmark[]): StanceMetric {
   if (lengthRatio < 0.25) {
     return buildMetric(
       'stance-length',
-      'Stance length',
+      'metrics.stanceLength.label',
       'bad',
       35,
-      'Your stance appears too square front-to-back.',
-      'Step your rear foot back slightly so you are not square and can move from a fighting stance.',
+      'metrics.stanceLength.bad',
+      'metrics.stanceLength.badCorrection',
     );
   }
 
   if (lengthRatio > 0.95) {
     return buildMetric(
       'stance-length',
-      'Stance length',
+      'metrics.stanceLength.label',
       'warn',
       65,
-      'Your stance appears too long front-to-back.',
-      'Shorten the stance so you can check, teep, and step without dragging your rear leg.',
+      'metrics.stanceLength.warn',
+      'metrics.stanceLength.warnCorrection',
     );
   }
 
-  return buildMetric('stance-length', 'Stance length', 'good', 92, 'Your front-to-back stance length looks mobile.');
+  return buildMetric('stance-length', 'metrics.stanceLength.label', 'good', 92, 'metrics.stanceLength.good');
 }
 
 export function evaluateKneeSoftness(landmarks: PoseLandmark[]): StanceMetric {
@@ -122,7 +131,7 @@ export function evaluateKneeSoftness(landmarks: PoseLandmark[]): StanceMetric {
 
   const required = [leftHip, rightHip, leftKnee, rightKnee, leftAnkle, rightAnkle];
   if (required.some((landmark) => !landmark.visible) || scale.torsoLength === 0) {
-    return unknownMetric('knee-softness', 'Knee softness', 'Not enough hip, knee, or ankle visibility to judge knee bend.');
+    return unknownMetric('knee-softness', 'metrics.kneeSoftness.label', 'metrics.kneeSoftness.unknown');
   }
 
   const leftBend = perpendicularDistance(leftKnee, leftHip, leftAnkle) / scale.torsoLength;
@@ -132,26 +141,26 @@ export function evaluateKneeSoftness(landmarks: PoseLandmark[]): StanceMetric {
   if (averageBend < 0.06) {
     return buildMetric(
       'knee-softness',
-      'Knee softness',
+      'metrics.kneeSoftness.label',
       'bad',
       35,
-      'Your knees appear too straight for an athletic stance.',
-      'Soften your knees. Think athletic bounce, not standing tall.',
+      'metrics.kneeSoftness.bad',
+      'metrics.kneeSoftness.badCorrection',
     );
   }
 
   if (averageBend > 0.5) {
     return buildMetric(
       'knee-softness',
-      'Knee softness',
+      'metrics.kneeSoftness.label',
       'warn',
       65,
-      'Your stance appears deeper than needed for mobile Muay Thai movement.',
-      'Rise a little. Muay Thai stance should be mobile, not a squat.',
+      'metrics.kneeSoftness.warn',
+      'metrics.kneeSoftness.warnCorrection',
     );
   }
 
-  return buildMetric('knee-softness', 'Knee softness', 'good', 92, 'Your knees look softly bent and ready to move.');
+  return buildMetric('knee-softness', 'metrics.kneeSoftness.label', 'good', 92, 'metrics.kneeSoftness.good');
 }
 
 export function evaluateGuardPosition(landmarks: PoseLandmark[]): StanceMetric {
@@ -162,7 +171,7 @@ export function evaluateGuardPosition(landmarks: PoseLandmark[]): StanceMetric {
   const rightShoulder = getVisibleLandmark(landmarks, POSE_LANDMARKS.RIGHT_SHOULDER);
 
   if (![leftWrist, rightWrist, nose, leftShoulder, rightShoulder].every((landmark) => landmark.visible)) {
-    return unknownMetric('guard-position', 'Guard position', 'Not enough hand, head, or shoulder visibility to judge guard position.');
+    return unknownMetric('guard-position', 'metrics.guardPosition.label', 'metrics.guardPosition.unknown');
   }
 
   const shoulderLineY = (leftShoulder.y + rightShoulder.y) / 2;
@@ -172,15 +181,15 @@ export function evaluateGuardPosition(landmarks: PoseLandmark[]): StanceMetric {
   if (droppedHands > 0) {
     return buildMetric(
       'guard-position',
-      'Guard position',
+      'metrics.guardPosition.label',
       'bad',
       droppedHands === 2 ? 30 : 45,
-      droppedHands === 2 ? 'Both hands are dropping below your defensive line.' : 'One hand is dropping below your defensive line.',
-      'Keep your guard active with your hands near your cheek and chin line after every movement.',
+      droppedHands === 2 ? 'metrics.guardPosition.badBoth' : 'metrics.guardPosition.badOne',
+      'metrics.guardPosition.badCorrection',
     );
   }
 
-  return buildMetric('guard-position', 'Guard position', 'good', 92, 'Your hands are high enough to protect your head.');
+  return buildMetric('guard-position', 'metrics.guardPosition.label', 'good', 92, 'metrics.guardPosition.good');
 }
 
 export function evaluateHeadPosture(landmarks: PoseLandmark[]): StanceMetric {
@@ -190,7 +199,7 @@ export function evaluateHeadPosture(landmarks: PoseLandmark[]): StanceMetric {
   const scale = getBodyScale(landmarks);
 
   if (![nose, leftShoulder, rightShoulder].every((landmark) => landmark.visible) || scale.shoulderWidth === 0) {
-    return unknownMetric('head-posture', 'Head posture', 'Not enough head or shoulder visibility to judge head posture.');
+    return unknownMetric('head-posture', 'metrics.headPosture.label', 'metrics.headPosture.unknown');
   }
 
   const shoulderCenterX = (leftShoulder.x + rightShoulder.x) / 2;
@@ -199,15 +208,15 @@ export function evaluateHeadPosture(landmarks: PoseLandmark[]): StanceMetric {
   if (lateralDriftRatio > 0.75) {
     return buildMetric(
       'head-posture',
-      'Head posture',
+      'metrics.headPosture.label',
       'warn',
       65,
-      'Your head appears to drift away from your stance centerline.',
-      'Stack your head over your stance and keep your chin slightly tucked instead of reaching.',
+      'metrics.headPosture.warn',
+      'metrics.headPosture.warnCorrection',
     );
   }
 
-  return buildMetric('head-posture', 'Head posture', 'good', 92, 'Your head looks stacked over your stance.');
+  return buildMetric('head-posture', 'metrics.headPosture.label', 'good', 92, 'metrics.headPosture.good');
 }
 
 export function evaluateWeightBalance(landmarks: PoseLandmark[]): StanceMetric {
@@ -218,7 +227,7 @@ export function evaluateWeightBalance(landmarks: PoseLandmark[]): StanceMetric {
   const scale = getBodyScale(landmarks);
 
   if (!leftHip.visible || !rightHip.visible || !leftAnkle.visible || !rightAnkle.visible || scale.shoulderWidth === 0) {
-    return unknownMetric('weight-balance', 'Weight balance', 'Not enough hip or ankle visibility to judge weight balance.');
+    return unknownMetric('weight-balance', 'metrics.weightBalance.label', 'metrics.weightBalance.unknown');
   }
 
   const hipMidX = (leftHip.x + rightHip.x) / 2;
@@ -228,15 +237,15 @@ export function evaluateWeightBalance(landmarks: PoseLandmark[]): StanceMetric {
   if (lateralShift > 0.25) {
     return buildMetric(
       'weight-balance',
-      'Weight balance',
+      'metrics.weightBalance.label',
       'warn',
       60,
-      'Your hips drift significantly over one leg.',
-      'Center your weight over your stance so either leg can move freely for checks, teeps, and steps.',
+      'metrics.weightBalance.warn',
+      'metrics.weightBalance.warnCorrection',
     );
   }
 
-  return buildMetric('weight-balance', 'Weight balance', 'good', 92, 'Your weight looks balanced over your stance.');
+  return buildMetric('weight-balance', 'metrics.weightBalance.label', 'good', 92, 'metrics.weightBalance.good');
 }
 
 export function evaluateShoulderHipAlignment(landmarks: PoseLandmark[]): StanceMetric {
@@ -247,7 +256,7 @@ export function evaluateShoulderHipAlignment(landmarks: PoseLandmark[]): StanceM
   const scale = getBodyScale(landmarks);
 
   if (![leftShoulder, rightShoulder, leftHip, rightHip].every((landmark) => landmark.visible) || scale.hipWidth === 0) {
-    return unknownMetric('shoulder-hip-alignment', 'Shoulder and hip alignment', 'Not enough shoulder or hip visibility to judge stance angle.');
+    return unknownMetric('shoulder-hip-alignment', 'metrics.shoulderHipAlignment.label', 'metrics.shoulderHipAlignment.unknown');
   }
 
   const shoulderWidth = Math.abs(leftShoulder.x - rightShoulder.x);
@@ -257,24 +266,24 @@ export function evaluateShoulderHipAlignment(landmarks: PoseLandmark[]): StanceM
   if (ratio < 0.65) {
     return buildMetric(
       'shoulder-hip-alignment',
-      'Shoulder and hip alignment',
+      'metrics.shoulderHipAlignment.label',
       'warn',
       65,
-      'Your stance appears very sideways.',
-      'Open up enough to check kicks and throw rear-side weapons without being over-bladed.',
+      'metrics.shoulderHipAlignment.warnSideways',
+      'metrics.shoulderHipAlignment.warnSidewaysCorrection',
     );
   }
 
   if (ratio < 1.15) {
     return buildMetric(
       'shoulder-hip-alignment',
-      'Shoulder and hip alignment',
+      'metrics.shoulderHipAlignment.label',
       'warn',
       65,
-      'Your stance appears very square.',
-      'Angle your stance slightly so your rear side is protected while you stay ready to check kicks.',
+      'metrics.shoulderHipAlignment.warnSquare',
+      'metrics.shoulderHipAlignment.warnSquareCorrection',
     );
   }
 
-  return buildMetric('shoulder-hip-alignment', 'Shoulder and hip alignment', 'good', 92, 'Your shoulder and hip angle looks useful for Muay Thai stance.');
+  return buildMetric('shoulder-hip-alignment', 'metrics.shoulderHipAlignment.label', 'good', 92, 'metrics.shoulderHipAlignment.good');
 }

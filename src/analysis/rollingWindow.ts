@@ -1,4 +1,5 @@
 import type { StanceMetric, StanceAnalysisResult } from './types';
+import { t } from '../i18n/t';
 
 export interface RollingWindowConfig {
   windowMs: number;
@@ -42,7 +43,7 @@ function aggregateMetric(frames: FrameWithMetrics[], metricId: string): StanceMe
   }
 
   if (values.length === 0) {
-    return { id: metricId, label, status: 'unknown', score: 0, confidence: 0, message: 'No data' };
+    return { id: metricId, label, status: 'unknown', score: 0, confidence: 0, message: t('stability.noData') };
   }
 
   const avgScore = Math.round(confidenceWeightedAverage(values, weights));
@@ -65,7 +66,7 @@ function aggregateMetric(frames: FrameWithMetrics[], metricId: string): StanceMe
 
 function computeStability(frames: FrameWithMetrics[], metricId: string, label: string): StanceMetric {
   if (frames.length < 2) {
-    return { id: `stability-${metricId}`, label, status: 'unknown', score: 100, confidence: 0.5, message: 'Need more frames' };
+    return { id: `stability-${metricId}`, label, status: 'unknown', score: 100, confidence: 0.5, message: t('stability.needMoreFrames') };
   }
 
   const values = frames.map(f => {
@@ -74,7 +75,7 @@ function computeStability(frames: FrameWithMetrics[], metricId: string, label: s
   }).filter((v): v is number => v !== null);
 
   if (values.length < 2) {
-    return { id: `stability-${metricId}`, label, status: 'unknown', score: 100, confidence: 0.5, message: 'Need more frames' };
+    return { id: `stability-${metricId}`, label, status: 'unknown', score: 100, confidence: 0.5, message: t('stability.needMoreFrames') };
   }
 
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
@@ -91,7 +92,7 @@ function computeStability(frames: FrameWithMetrics[], metricId: string, label: s
     status,
     score: Math.round(stabilityScore),
     confidence: 0.8,
-    message: stabilityScore > 75 ? 'Stable' : stabilityScore > 50 ? 'Some drift detected' : 'Unstable',
+    message: stabilityScore > 75 ? t('stability.stable') : stabilityScore > 50 ? t('stability.someDrift') : t('stability.unstable'),
   };
 }
 
@@ -135,26 +136,25 @@ export function createRollingWindow(config: RollingWindowConfig): RollingWindow 
       }
 
       const stabilityMap: Record<string, string> = {
-        'base-width': 'Base width',
-        'guard-position': 'Guard position',
-        'head-posture': 'Head posture',
-        'shoulder-hip-alignment': 'Shoulder and hip alignment',
-        'weight-balance': 'Weight balance',
+        'base-width': t('metrics.baseWidth.label'),
+        'guard-position': t('metrics.guardPosition.label'),
+        'head-posture': t('metrics.headPosture.label'),
+        'shoulder-hip-alignment': t('metrics.shoulderHipAlignment.label'),
+        'weight-balance': t('metrics.weightBalance.label'),
       };
 
       const metrics: StanceMetric[] = [];
       for (const metricId of metricIds) {
         if (metricId.startsWith('stability-')) {
           const baseId = metricId.replace('stability-', '');
-          metrics.push(computeStability(validFrames, baseId, `Stability: ${baseId}`));
+          metrics.push(computeStability(validFrames, baseId, `${t('stability.label')} ${baseId}`));
         } else {
           metrics.push(aggregateMetric(validFrames, metricId));
         }
       }
 
-      // Add stability metrics for tracked dimensions that have data
       for (const [trackedId, label] of Object.entries(stabilityMap)) {
-        metrics.push(computeStability(validFrames, trackedId, `Stability: ${label}`));
+        metrics.push(computeStability(validFrames, trackedId, `${t('stability.label')} ${label}`));
       }
 
       const sortedMetrics = [...metrics]

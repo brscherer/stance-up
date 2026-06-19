@@ -1,27 +1,10 @@
 import type { StanceAnalysisResult } from './types';
+import { t } from '../i18n/t';
 
 export interface FeedbackResult {
   topCues: string[];
   summary: string;
 }
-
-const GOOD_SUMMARIES = [
-  'Your stance looks solid — keep maintaining these fundamentals.',
-  'Strong stance fundamentals. Stay consistent with this structure.',
-  'Excellent base. Your Muay Thai stance is well-structured.',
-];
-
-const WARN_SUMMARIES = [
-  'Your stance has room for improvement. Focus on the cues below.',
-  'Decent foundation, but a few adjustments will sharpen your stance.',
-  'You\'re close — dial in these details for a tighter stance.',
-];
-
-const BAD_SUMMARIES = [
-  'Your stance needs work. Start with the top cues below.',
-  'Significant stance issues detected. Address the priority corrections.',
-  'Reset your stance and focus on the fundamentals first.',
-];
 
 function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -41,14 +24,14 @@ export function generateFeedback(result: StanceAnalysisResult): FeedbackResult {
 
   let summary: string;
   if (overallScore >= 80) {
-    summary = pickRandom(GOOD_SUMMARIES);
+    summary = pickRandom([t('feedback.good0'), t('feedback.good1'), t('feedback.good2')]);
   } else if (overallScore >= 60) {
-    summary = pickRandom(WARN_SUMMARIES);
+    summary = pickRandom([t('feedback.warn0'), t('feedback.warn1'), t('feedback.warn2')]);
   } else {
-    summary = pickRandom(BAD_SUMMARIES);
+    summary = pickRandom([t('feedback.bad0'), t('feedback.bad1'), t('feedback.bad2')]);
   }
 
-  summary += ` Overall score: ${overallScore}/100.`;
+  summary += ` ${t('feedback.scoreSuffix')} ${overallScore}/100.`;
 
   return { topCues, summary };
 }

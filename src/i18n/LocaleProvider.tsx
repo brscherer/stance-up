@@ -18,13 +18,18 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     if (saved === 'pt-BR') {
       setLocale(saved);
     }
-    return subscribe(() => forceUpdate(n => n + 1));
+    document.documentElement.lang = getLocale();
+    return subscribe(() => {
+      document.documentElement.lang = getLocale();
+      forceUpdate(n => n + 1);
+    });
   }, []);
 
   const toggle = () => {
     const next: Locale = getLocale() === 'en' ? 'pt-BR' : 'en';
     setLocale(next);
     localStorage.setItem('stance-up-locale', next);
+    document.documentElement.lang = next;
   };
 
   return (

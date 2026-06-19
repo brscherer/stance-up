@@ -31,6 +31,21 @@ button:focus-visible {
   outline-offset: 3px;
 }
 
+.locale-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  color: #e8d8cd;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.35rem 0.7rem;
+  position: fixed;
+  right: 1rem;
+  top: 1rem;
+  z-index: 100;
+}
+
 .app-shell {
   align-items: center;
   background:
