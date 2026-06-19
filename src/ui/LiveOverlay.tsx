@@ -1,10 +1,16 @@
 import { useEffect, useRef } from 'react';
 import type { PoseLandmark } from '../analysis/types';
 
+export interface DisplayRect {
+  width: number;
+  height: number;
+  offsetX: number;
+  offsetY: number;
+}
+
 interface LiveOverlayProps {
   landmarks: PoseLandmark[];
-  videoWidth: number;
-  videoHeight: number;
+  displayRect: DisplayRect;
 }
 
 const POSE_CONNECTIONS = [
@@ -22,8 +28,11 @@ const LANDMARK_RADIUS = 4;
 const CONNECTION_WIDTH = 2;
 const VISIBILITY_THRESHOLD = 0.5;
 
-export function LiveOverlay({ landmarks, videoWidth, videoHeight }: LiveOverlayProps) {
+export function LiveOverlay({ landmarks, displayRect }: LiveOverlayProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { width: cw, height: ch } = displayRect;
+  const canvasWidth = Math.round(cw);
+  const canvasHeight = Math.round(ch);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -32,7 +41,7 @@ export function LiveOverlay({ landmarks, videoWidth, videoHeight }: LiveOverlayP
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.clearRect(0, 0, videoWidth, videoHeight);
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
     if (!landmarks || landmarks.length === 0) return;
 
@@ -48,10 +57,10 @@ export function LiveOverlay({ landmarks, videoWidth, videoHeight }: LiveOverlayP
       if ((start.visibility ?? 0) < VISIBILITY_THRESHOLD) continue;
       if ((end.visibility ?? 0) < VISIBILITY_THRESHOLD) continue;
 
-      const sx = start.x * videoWidth;
-      const sy = start.y * videoHeight;
-      const ex = end.x * videoWidth;
-      const ey = end.y * videoHeight;
+      const sx = displayRect.offsetX + start.x * displayRect.width;
+      const sy = displayRect.offsetY + start.y * displayRect.height;
+      const ex = displayRect.offsetX + end.x * displayRect.width;
+      const ey = displayRect.offsetY + end.y * displayRect.height;
 
       ctx.beginPath();
       ctx.moveTo(sx, sy);
@@ -64,20 +73,20 @@ export function LiveOverlay({ landmarks, videoWidth, videoHeight }: LiveOverlayP
     for (const landmark of landmarks) {
       if ((landmark.visibility ?? 0) < VISIBILITY_THRESHOLD) continue;
 
-      const x = landmark.x * videoWidth;
-      const y = landmark.y * videoHeight;
+      const x = displayRect.offsetX + landmark.x * displayRect.width;
+      const y = displayRect.offsetY + landmark.y * displayRect.height;
 
       ctx.beginPath();
       ctx.arc(x, y, LANDMARK_RADIUS, 0, Math.PI * 2);
       ctx.fill();
     }
-  }, [landmarks, videoWidth, videoHeight]);
+  }, [landmarks, displayRect, canvasWidth, canvasHeight]);
 
   return (
     <canvas
       ref={canvasRef}
-      width={videoWidth}
-      height={videoHeight}
+      width={canvasWidth}
+      height={canvasHeight}
       className="pose-overlay"
       role="img"
       aria-hidden="true"

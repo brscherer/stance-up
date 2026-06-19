@@ -15,6 +15,10 @@ body {
   margin: 0;
 }
 
+#root {
+  min-height: 100vh;
+}
+
 button {
   border: 0;
   border-radius: 999px;
@@ -52,8 +56,9 @@ button:focus-visible {
     radial-gradient(circle at top left, rgba(240, 90, 40, 0.28), transparent 34rem),
     linear-gradient(135deg, #211915, #0f0d0c);
   display: flex;
-  min-height: 100vh;
+  min-height: inherit;
   padding: 1.5rem;
+  box-sizing: border-box;
 }
 
 .hero-card {
@@ -90,4 +95,422 @@ h1 {
   color: #ffd2bf;
   font-weight: 700;
   margin-block-end: 0;
+}
+
+/* Analyzing state — full-screen camera
+   ======================================== */
+.app-shell.analyzing {
+  padding: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+.camera-view {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+.video-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+.video-container video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pose-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+/* Hide the camera select / stop controls — they're redundant in full-screen mode */
+.camera-view .controls {
+  display: none;
+}
+
+/* Glass-panel overlay for score + hints
+   ======================================== */
+.analysis-overlay {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 10;
+  max-width: 380px;
+  width: calc(100vw - 3rem);
+  max-height: calc(100vh - 6rem);
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: rgba(21, 17, 15, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.session-controls {
+  position: fixed;
+  top: 1rem;
+  right: 5rem;
+  z-index: 100;
+}
+
+/* Compact score panel inside the glass overlay
+   ============================================== */
+.score-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.overall-score {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.score-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 4px solid var(--score-color, #9ca3af);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.score-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.score-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #e8d8cd;
+}
+
+.confidence {
+  font-size: 0.8rem;
+  color: #ccc;
+}
+
+.top-cues h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #f05a28;
+}
+
+.top-cues ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.top-cues li {
+  margin-bottom: 0.25rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #e8d8cd;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.metric-chip {
+  border-left: 3px solid;
+  padding-left: 0.5rem;
+  font-size: 0.75rem;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.metric-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.metric-name {
+  color: #ccc;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metric-score {
+  font-weight: 700;
+  color: #fff;
+}
+
+.metric-correction {
+  font-size: 0.7rem;
+  color: #aaa;
+  margin-top: 0.15rem;
+}
+
+/* Shared / utility
+   ============================== */
+.privacy-note {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  margin-block: 1.5rem 0;
+  text-align: center;
+}
+
+.error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  color: #fca5a5;
+  font-size: 0.85rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+}
+
+/* Setup / Checklist page
+   ============================== */
+.camera-setup {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 28px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
+  max-width: 560px;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  width: 100%;
+}
+
+.camera-setup h2 {
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  margin: 0 0 0.5rem;
+}
+
+.setup-description {
+  color: #e8d8cd;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0 0 1.5rem;
+}
+
+.setup-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.checklist-item {
+  align-items: center;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  font-size: 0.95rem;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  transition: background 0.15s;
+}
+
+.checklist-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.checklist-item input[type="checkbox"] {
+  accent-color: #f05a28;
+  cursor: pointer;
+  flex-shrink: 0;
+  height: 1.1rem;
+  width: 1.1rem;
+}
+
+.stance-selector {
+  margin-bottom: 1.5rem;
+}
+
+.stance-selector label {
+  color: #e8d8cd;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+  font-weight: 700;
+  gap: 0.4rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.stance-selector select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23e8d8cd' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-position: right 1rem center;
+  background-repeat: no-repeat;
+  background-size: 10px 6px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: #f7efe5;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1rem;
+  padding: 0.7rem 2.5rem 0.7rem 1rem;
+}
+
+.stance-selector select:focus-visible {
+  outline: 3px solid #ffd2bf;
+  outline-offset: 3px;
+}
+
+.start-button {
+  font-size: 1.05rem;
+  padding: 1rem;
+  width: 100%;
+}
+
+.start-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Session Summary page
+   ============================== */
+.session-summary {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 28px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
+  max-width: 640px;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  width: 100%;
+}
+
+.summary-header {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.summary-header h2 {
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  margin: 0;
+}
+
+.close-button {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 999px;
+  color: #e8d8cd;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.4rem 0.7rem !important;
+  transition: background 0.15s;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.summary-stats {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  margin-bottom: 1.5rem;
+}
+
+.stat {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  color: #e8d8cd;
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.summary-section {
+  margin-bottom: 1.25rem;
+}
+
+.summary-section h3 {
+  color: #e8d8cd;
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+}
+
+.summary-section h3:first-of-type {
+  margin-bottom: 0.75rem;
+}
+
+.cue-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cue-list li {
+  align-items: baseline;
+  display: flex;
+  font-size: 0.9rem;
+  gap: 0.4rem;
+  line-height: 1.4;
+  margin-bottom: 0.35rem;
+}
+
+.cue-text {
+  color: #f7efe5;
+}
+
+.cue-count {
+  color: #aaa;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.summary-actions {
+  margin-top: 1.5rem;
+}
+
+.primary-button {
+  font-size: 1.05rem;
+  padding: 1rem;
+  width: 100%;
 }

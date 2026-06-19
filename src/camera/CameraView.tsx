@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { requestCameraPermission, enumerateCameras, stopCameraStream } from './cameraPermissions';
 import { createPoseLandmarker } from '../pose/poseLandmarker';
-import type { StanceAnalysisResult } from '../analysis/types';
+import type { StanceAnalysisResult, PoseLandmark } from '../analysis/types';
 import { createRollingWindow } from '../analysis/rollingWindow';
 import { evaluateBaseWidth, evaluateGuardPosition, evaluateHeadPosture, evaluateKneeSoftness, evaluateShoulderHipAlignment, evaluateStanceLength, evaluateWeightBalance } from '../analysis/stanceMetrics';
 import { detectStanceOrientation } from '../analysis/stanceOrientation';
 import { normalizeLandmarks } from '../pose/normalizeLandmarks';
-import type { PoseLandmark } from '../analysis/types';
-import { LiveOverlay } from '../ui/LiveOverlay';
+import { LiveOverlay, type DisplayRect } from '../ui/LiveOverlay';
 import { t } from '../i18n/t';
 
 interface CameraViewProps {
@@ -26,12 +25,61 @@ export function CameraView({ onFrame, stanceSelection, onError }: CameraViewProp
   const rollingWindowRef = useRef<ReturnType<typeof createRollingWindow> | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isActive, setIsActive] = useState(false);
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
   const [selectedCameraId, setSelectedCameraId] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [latestLandmarks, setLatestLandmarks] = useState<PoseLandmark[]>([]);
-  const [videoSize, setVideoSize] = useState({ width: 640, height: 480 });
+  const [displayRect, setDisplayRect] = useState<DisplayRect>({ width: 640, height: 480, offsetX: 0, offsetY: 0 });
+
+  const updateDisplayRect = useCallback(() => {
+    const container = containerRef.current;
+    const video = videoRef.current;
+    if (!container || !video || !video.videoWidth || !video.videoHeight) return;
+
+    const rect = container.getBoundingClientRect();
+    const cw = rect.width;
+    const ch = rect.height;
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+
+    const videoAspect = vw / vh;
+    const containerAspect = cw / ch;
+
+    let w: number, h: number, ox: number, oy: number;
+    if (videoAspect > containerAspect) {
+      h = ch;
+      w = ch * videoAspect;
+      ox = (cw - w) / 2;
+      oy = 0;
+    } else {
+      w = cw;
+      h = cw / videoAspect;
+      ox = 0;
+      oy = (ch - h) / 2;
+    }
+
+    setDisplayRect({ width: w, height: h, offsetX: ox, offsetY: oy });
+  }, []);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const video = videoRef.current;
+    if (!container || !video) return;
+
+    const observer = new ResizeObserver(updateDisplayRect);
+    observer.observe(container);
+
+    video.addEventListener('loadedmetadata', updateDisplayRect);
+    video.addEventListener('resize', updateDisplayRect);
+
+    return () => {
+      observer.disconnect();
+      video.removeEventListener('loadedmetadata', updateDisplayRect);
+      video.removeEventListener('resize', updateDisplayRect);
+    };
+  }, [updateDisplayRect]);
 
   const analyzeFrame = useCallback((landmarks: LandmarkResult['landmarks']) => {
     const poseLandmarks: PoseLandmark[] = landmarks.map(lm => ({
@@ -77,14 +125,14 @@ export function CameraView({ onFrame, stanceSelection, onError }: CameraViewProp
   const processVideoRef = useRef<(() => void) | null>(null);
 
   const processVideo = useCallback(async () => {
-    if (!videoRef.current || !poseLandmarkerRef.current || !isActive) return;
-
-    try {
-      const video = videoRef.current;
-      const results = poseLandmarkerRef.current.detectForVideo(video, performance.now());
-      analyzeFrame(results.landmarks[0] || []);
-    } catch (err) {
-      console.error('Pose detection error:', err);
+    if (videoRef.current && poseLandmarkerRef.current && isActive) {
+      try {
+        const video = videoRef.current;
+        const results = poseLandmarkerRef.current.detectForVideo(video, performance.now());
+        analyzeFrame(results.landmarks[0] || []);
+      } catch (err) {
+        console.error('Pose detection error:', err);
+      }
     }
 
     animationFrameRef.current = requestAnimationFrame(() => processVideoRef.current?.());
@@ -93,22 +141,6 @@ export function CameraView({ onFrame, stanceSelection, onError }: CameraViewProp
   useEffect(() => {
     processVideoRef.current = processVideo;
   }, [processVideo]);
-
-  useEffect(() => {
-    if (!videoRef.current || !isActive) return;
-    const video = videoRef.current;
-    const handleResize = () => {
-      if (video.videoWidth && video.videoHeight) {
-        setVideoSize({ width: video.videoWidth, height: video.videoHeight });
-      }
-    };
-    video.addEventListener('loadedmetadata', handleResize);
-    video.addEventListener('resize', handleResize);
-    return () => {
-      video.removeEventListener('loadedmetadata', handleResize);
-      video.removeEventListener('resize', handleResize);
-    };
-  }, [isActive]);
 
   const startCamera = async (deviceId?: string) => {
     try {
@@ -169,25 +201,22 @@ export function CameraView({ onFrame, stanceSelection, onError }: CameraViewProp
 
   useEffect(() => {
     enumerateCameras().then(setCameras);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    startCamera();
 
     return () => {
       stopCamera();
     };
   }, [stopCamera]);
 
-  useEffect(() => {
-    startCamera();
-  }, []);
-
   return (
     <div className="camera-view">
-      <div className="video-container">
+      <div ref={containerRef} className="video-container">
         <video ref={videoRef} autoPlay playsInline muted />
         {latestLandmarks.length > 0 && (
           <LiveOverlay
             landmarks={latestLandmarks}
-            videoWidth={videoSize.width}
-            videoHeight={videoSize.height}
+            displayRect={displayRect}
           />
         )}
       </div>
