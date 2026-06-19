@@ -1,4 +1,5 @@
 import type { StanceSelection } from '../analysis/types';
+import { useLocale } from '../i18n/LocaleProvider';
 
 interface SetupChecklistProps {
   stanceSelection: StanceSelection;
@@ -15,19 +16,21 @@ export function SetupChecklist({
   isLoading,
   error,
 }: SetupChecklistProps) {
+  const { t } = useLocale();
+
   const checklistItems = [
-    { label: 'Full body visible', id: 'body' },
-    { label: 'Hands visible', id: 'hands' },
-    { label: 'Feet visible', id: 'feet' },
-    { label: 'Good lighting', id: 'lighting' },
-    { label: 'Stable camera', id: 'camera' },
+    { label: t('setup.fullBody'), id: 'body' },
+    { label: t('setup.handsVisible'), id: 'hands' },
+    { label: t('setup.feetVisible'), id: 'feet' },
+    { label: t('setup.goodLighting'), id: 'lighting' },
+    { label: t('setup.stableCamera'), id: 'camera' },
   ];
 
   return (
     <div className="camera-setup">
-      <h2>Camera Setup</h2>
+      <h2>{t('setup.heading')}</h2>
       <p className="setup-description">
-        Position your camera to capture your full body in frame. Processing happens locally — no video leaves your device.
+        {t('setup.description')}
       </p>
 
       <div className="setup-checklist" role="group" aria-label="Camera setup requirements">
@@ -41,16 +44,16 @@ export function SetupChecklist({
 
       <div className="stance-selector">
         <label>
-          Stance:
+          {t('setup.stance')}
           <select
             value={stanceSelection}
             onChange={e => onStanceChange(e.target.value as StanceSelection)}
-            aria-label="Select stance"
+            aria-label={t('setup.stance')}
             disabled={isLoading}
           >
-            <option value="orthodox">Orthodox (left lead)</option>
-            <option value="southpaw">Southpaw (right lead)</option>
-            <option value="auto">Auto-detect</option>
+            <option value="orthodox">{t('setup.orthodox')}</option>
+            <option value="southpaw">{t('setup.southpaw')}</option>
+            <option value="auto">{t('setup.autoDetect')}</option>
           </select>
         </label>
       </div>
@@ -60,13 +63,13 @@ export function SetupChecklist({
         disabled={isLoading}
         className="start-button"
       >
-        {isLoading ? 'Starting camera…' : 'Start Camera'}
+        {isLoading ? t('setup.startingCamera') : t('setup.startCamera')}
       </button>
 
       {error && <div className="error" role="alert">{error}</div>}
 
       <p className="privacy-note">
-        Camera frames are processed locally in your browser. No video is uploaded or stored.
+        {t('app.privacyNote')}
       </p>
     </div>
   );

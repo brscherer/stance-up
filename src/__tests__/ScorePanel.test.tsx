@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import type { ReactElement, ReactNode } from 'react';
+import { LocaleProvider } from '../i18n/LocaleProvider';
 import { ScorePanel } from '../ui/ScorePanel';
+
+function Wrapper({ children }: { children: ReactNode }) {
+  return <LocaleProvider>{children}</LocaleProvider>;
+}
+
+function renderWithLocale(ui: ReactElement) {
+  return render(ui, { wrapper: Wrapper });
+}
 import type { StanceMetric } from '../analysis/types';
 
 describe('ScorePanel', () => {
@@ -14,13 +24,13 @@ describe('ScorePanel', () => {
   ];
 
   it('renders overall score', () => {
-    render(<ScorePanel overallScore={78} confidence={0.85} metrics={mockMetrics} topCues={['Soften knees', 'Step back']} />);
+    renderWithLocale(<ScorePanel overallScore={78} confidence={0.85} metrics={mockMetrics} topCues={['Soften knees', 'Step back']} />);
 
     expect(screen.getByText(/78/)).toBeInTheDocument();
   });
 
   it('renders top cues', () => {
-    render(<ScorePanel overallScore={78} confidence={0.85} metrics={mockMetrics} topCues={['Soften knees', 'Step back']} />);
+    renderWithLocale(<ScorePanel overallScore={78} confidence={0.85} metrics={mockMetrics} topCues={['Soften knees', 'Step back']} />);
 
     const topCues = screen.getByText(/focus on:/i).closest('div');
     expect(topCues).toBeInTheDocument();
@@ -29,15 +39,15 @@ describe('ScorePanel', () => {
   });
 
   it('renders metric chips with correct colors', () => {
-    render(<ScorePanel overallScore={78} confidence={0.85} metrics={mockMetrics} topCues={[]} />);
+    renderWithLocale(<ScorePanel overallScore={78} confidence={0.85} metrics={mockMetrics} topCues={[]} />);
 
-    expect(screen.getByText(/base width/i)).toBeInTheDocument();
-    expect(screen.getByText(/stance length/i)).toBeInTheDocument();
-    expect(screen.getByText(/knee softness/i)).toBeInTheDocument();
+    expect(screen.getByText(/Base width/)).toBeInTheDocument();
+    expect(screen.getByText(/Stance length/)).toBeInTheDocument();
+    expect(screen.getByText(/Knee softness/)).toBeInTheDocument();
   });
 
   it('shows confidence indicator', () => {
-    render(<ScorePanel overallScore={78} confidence={0.85} metrics={mockMetrics} topCues={[]} />);
+    renderWithLocale(<ScorePanel overallScore={78} confidence={0.85} metrics={mockMetrics} topCues={[]} />);
 
     expect(screen.getByText(/85%/)).toBeInTheDocument();
   });

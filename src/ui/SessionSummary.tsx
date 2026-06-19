@@ -1,4 +1,5 @@
 import type { StanceAnalysisResult } from '../analysis/types';
+import { useLocale } from '../i18n/LocaleProvider';
 
 interface SessionSummaryProps {
   results: StanceAnalysisResult[];
@@ -33,12 +34,14 @@ function countCues(results: StanceAnalysisResult[]): Map<string, number> {
 }
 
 export function SessionSummary({ results, onClose }: SessionSummaryProps) {
+  const { t } = useLocale();
+
   if (results.length === 0) {
     return (
       <div className="session-summary">
-        <h2>Session Summary</h2>
-        <p>No data collected yet.</p>
-        <button onClick={onClose} className="close-button">Close</button>
+        <h2>{t('sessionSummary.heading')}</h2>
+        <p>{t('sessionSummary.noData')}</p>
+        <button onClick={onClose} className="close-button">{t('sessionSummary.close')}</button>
       </div>
     );
   }
@@ -54,7 +57,6 @@ export function SessionSummary({ results, onClose }: SessionSummaryProps) {
   const aggregated = aggregateMetrics(results);
   const cueCounts = countCues(results);
 
-  // Find best and worst metrics
   const metricAverages = Array.from(aggregated.entries()).map(([id, data]) => ({
     id,
     label: data.label,
@@ -66,51 +68,50 @@ export function SessionSummary({ results, onClose }: SessionSummaryProps) {
   const bestMetric = sortedMetrics[0];
   const worstMetric = sortedMetrics[sortedMetrics.length - 1];
 
-  // Top 3 recurring cues
   const topCues = Array.from(cueCounts.entries())
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
     .map(([cue, count]) => ({ cue, count }));
 
   return (
-    <div className="session-summary" role="dialog" aria-label="Session summary">
+    <div className="session-summary" role="dialog" aria-label={t('sessionSummary.heading')}>
       <div className="summary-header">
-        <h2>Session Complete</h2>
-        <button onClick={onClose} className="close-button" aria-label="Close">✕</button>
+        <h2>{t('sessionSummary.sessionComplete')}</h2>
+        <button onClick={onClose} className="close-button" aria-label={t('sessionSummary.close')}>✕</button>
       </div>
 
       <div className="summary-stats">
         <div className="stat">
           <span className="stat-value">{avgScore}</span>
-          <span className="stat-label">Average Score</span>
+          <span className="stat-label">{t('sessionSummary.averageScore')}</span>
         </div>
         <div className="stat">
           <span className="stat-value">{Math.round(avgConfidence * 100)}%</span>
-          <span className="stat-label">Avg Confidence</span>
+          <span className="stat-label">{t('sessionSummary.avgConfidence')}</span>
         </div>
         <div className="stat">
           <span className="stat-value">{durationSec}s</span>
-          <span className="stat-label">Duration</span>
+          <span className="stat-label">{t('sessionSummary.duration')}</span>
         </div>
         <div className="stat">
           <span className="stat-value">{results.length}</span>
-          <span className="stat-label">Frames</span>
+          <span className="stat-label">{t('sessionSummary.frames')}</span>
         </div>
       </div>
 
       <div className="summary-section">
-        <h3>Best: {bestMetric.label} ({bestMetric.avgScore})</h3>
-        <h3>Needs Work: {worstMetric.label} ({worstMetric.avgScore})</h3>
+        <h3>{t('sessionSummary.best')} {bestMetric.label} ({bestMetric.avgScore})</h3>
+        <h3>{t('sessionSummary.needsWork')} {worstMetric.label} ({worstMetric.avgScore})</h3>
       </div>
 
       {topCues.length > 0 && (
         <div className="summary-section">
-          <h3>Top Focus Areas</h3>
+          <h3>{t('sessionSummary.topFocusAreas')}</h3>
           <ul className="cue-list">
             {topCues.map(({ cue, count }, i) => (
               <li key={i}>
                 <span className="cue-text">{cue}</span>
-                <span className="cue-count">({count}x)</span>
+                <span className="cue-count">({count}{t('sessionSummary.times')})</span>
               </li>
             ))}
           </ul>
@@ -118,11 +119,11 @@ export function SessionSummary({ results, onClose }: SessionSummaryProps) {
       )}
 
       <div className="summary-actions">
-        <button onClick={onClose} className="primary-button">Done</button>
+        <button onClick={onClose} className="primary-button">{t('sessionSummary.done')}</button>
       </div>
 
       <p className="privacy-note">
-        Session data is stored locally only. No video or pose data leaves your device.
+        {t('sessionSummary.privacyNote')}
       </p>
     </div>
   );

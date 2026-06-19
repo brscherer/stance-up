@@ -1,4 +1,5 @@
 import type { StanceMetric } from '../analysis/types';
+import { useLocale } from '../i18n/LocaleProvider';
 
 interface ScorePanelProps {
   overallScore: number;
@@ -16,33 +17,33 @@ function getStatusColor(status: StanceMetric['status']): string {
   }
 }
 
-function getStatusLabel(status: StanceMetric['status']): string {
-  switch (status) {
-    case 'good': return '✓';
-    case 'warn': return '⚠';
-    case 'bad': return '✗';
-    default: return '?';
-  }
-}
-
 export function ScorePanel({ overallScore, confidence, metrics, topCues }: ScorePanelProps) {
+  const { t } = useLocale();
+
+  const statusLabels: Record<string, string> = {
+    good: t('scorePanel.good'),
+    warn: t('scorePanel.warn'),
+    bad: t('scorePanel.bad'),
+    unknown: t('scorePanel.unknown'),
+  };
+
   return (
-    <div className="score-panel" role="region" aria-label="Stance analysis">
+    <div className="score-panel" role="region" aria-label={t('scorePanel.stanceAnalysis')}>
       <div className="overall-score">
         <div className="score-circle" style={{ '--score-color': getStatusColor(
           overallScore >= 80 ? 'good' : overallScore >= 60 ? 'warn' : 'bad'
         ) } as React.CSSProperties}>
           <span className="score-value">{overallScore}</span>
-          <span className="score-label">/100</span>
+          <span className="score-label">{t('scorePanel.scoreLabel')}</span>
         </div>
         <div className="confidence">
-          <span>Confidence: {Math.round(confidence * 100)}%</span>
+          <span>{t('scorePanel.confidence')} {Math.round(confidence * 100)}%</span>
         </div>
       </div>
 
       {topCues.length > 0 && (
         <div className="top-cues" aria-live="polite">
-          <h3>Focus on:</h3>
+          <h3>{t('scorePanel.focusOn')}</h3>
           <ul>
             {topCues.slice(0, 3).map((cue, i) => (
               <li key={i}>{cue}</li>
@@ -59,7 +60,7 @@ export function ScorePanel({ overallScore, confidence, metrics, topCues }: Score
             style={{ borderLeftColor: getStatusColor(metric.status) }}
           >
             <div className="metric-header">
-              <span className="metric-badge">{getStatusLabel(metric.status)}</span>
+              <span className="metric-badge">{statusLabels[metric.status]}</span>
               <span className="metric-name">{metric.label}</span>
               <span className="metric-score">{metric.score}</span>
             </div>

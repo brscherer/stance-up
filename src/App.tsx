@@ -1,14 +1,15 @@
 import { useState, useCallback } from 'react';
 import { CameraView } from './camera/CameraView';
 import { SetupChecklist } from './ui/SetupChecklist';
-// import { LiveOverlay } from './ui/LiveOverlay'; // Used in future
 import { ScorePanel } from './ui/ScorePanel';
 import { SessionSummary } from './ui/SessionSummary';
+import { LocaleProvider, LocaleToggle, useLocale } from './i18n/LocaleProvider';
 import type { StanceAnalysisResult, StanceSelection } from './analysis/types';
 
 type AppState = 'landing' | 'setup' | 'analyzing' | 'summary';
 
-function App() {
+function AppContent() {
+  const { t } = useLocale();
   const [state, setState] = useState<AppState>('landing');
   const [stanceSelection, setStanceSelection] = useState<StanceSelection>('orthodox');
   const [latestResult, setLatestResult] = useState<StanceAnalysisResult | null>(null);
@@ -47,18 +48,15 @@ function App() {
   if (state === 'landing') {
     return (
       <main className="app-shell">
+        <LocaleToggle />
         <section className="hero-card" aria-labelledby="app-title">
-          <p className="eyebrow">Muay Thai stance coach</p>
-          <h1 id="app-title">Stance Up</h1>
-          <p className="lede">
-            Use your camera locally to check stance fundamentals and get clear cues for your next round.
-          </p>
+          <p className="eyebrow">{t('app.eyebrow')}</p>
+          <h1 id="app-title">{t('app.title')}</h1>
+          <p className="lede">{t('app.lede')}</p>
           <button type="button" onClick={() => setState('setup')}>
-            Start Camera Setup
+            {t('app.startButton')}
           </button>
-          <p className="privacy-note">
-            Camera frames are processed locally in your browser. No video is uploaded or stored.
-          </p>
+          <p className="privacy-note">{t('app.privacyNote')}</p>
         </section>
       </main>
     );
@@ -67,6 +65,7 @@ function App() {
   if (state === 'setup') {
     return (
       <main className="app-shell">
+        <LocaleToggle />
         <SetupChecklist
           stanceSelection={stanceSelection}
           onStanceChange={setStanceSelection}
@@ -80,6 +79,7 @@ function App() {
   if (state === 'analyzing') {
     return (
       <main className="app-shell analyzing">
+        <LocaleToggle />
         <CameraView
           onFrame={handleFrame}
           stanceSelection={stanceSelection}
@@ -97,7 +97,7 @@ function App() {
         )}
         <div className="session-controls">
           <button onClick={handleStopSession} className="stop-button">
-            End Session
+            {t('app.endSession')}
           </button>
         </div>
       </main>
@@ -107,6 +107,7 @@ function App() {
   if (state === 'summary') {
     return (
       <main className="app-shell">
+        <LocaleToggle />
         <SessionSummary
           results={sessionResults}
           onClose={handleCloseSummary}
@@ -116,6 +117,14 @@ function App() {
   }
 
   return null;
+}
+
+function App() {
+  return (
+    <LocaleProvider>
+      <AppContent />
+    </LocaleProvider>
+  );
 }
 
 export default App;

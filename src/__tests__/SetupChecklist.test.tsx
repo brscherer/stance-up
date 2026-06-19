@@ -1,6 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import type { ReactElement, ReactNode } from 'react';
+import { LocaleProvider } from '../i18n/LocaleProvider';
 import { SetupChecklist } from '../ui/SetupChecklist';
+
+function Wrapper({ children }: { children: ReactNode }) {
+  return <LocaleProvider>{children}</LocaleProvider>;
+}
+
+function renderWithLocale(ui: ReactElement) {
+  return render(ui, { wrapper: Wrapper });
+}
 
 const defaultProps = {
   stanceSelection: 'orthodox' as const,
@@ -10,7 +20,7 @@ const defaultProps = {
 
 describe('SetupChecklist', () => {
   it('renders all checklist items', () => {
-    render(<SetupChecklist {...defaultProps} />);
+    renderWithLocale(<SetupChecklist {...defaultProps} />);
 
     expect(screen.getByText(/full body visible/i)).toBeInTheDocument();
     expect(screen.getByText(/hands visible/i)).toBeInTheDocument();
@@ -20,7 +30,7 @@ describe('SetupChecklist', () => {
   });
 
   it('renders stance selector with three options', () => {
-    render(<SetupChecklist {...defaultProps} />);
+    renderWithLocale(<SetupChecklist {...defaultProps} />);
 
     const select = screen.getByRole('combobox');
     expect(select).toBeInTheDocument();
@@ -31,12 +41,10 @@ describe('SetupChecklist', () => {
 
   it('calls onStanceChange when selection changes', () => {
     const onChange = vi.fn();
-    render(<SetupChecklist {...defaultProps} onStanceChange={onChange} />);
+    renderWithLocale(<SetupChecklist {...defaultProps} onStanceChange={onChange} />);
 
     const select = screen.getByRole('combobox');
-    vi.dynamicImportSettled?.().catch(() => {});
 
-    // Can't easily test select change with vitest, but we can verify the handler is attached
-    expect(select).toHaveAttribute('aria-label', 'Select stance');
+    expect(select).toHaveAttribute('aria-label', 'Stance:');
   });
 });

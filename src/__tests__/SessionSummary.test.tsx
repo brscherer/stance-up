@@ -1,6 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import type { ReactElement, ReactNode } from 'react';
+import { LocaleProvider } from '../i18n/LocaleProvider';
 import { SessionSummary } from '../ui/SessionSummary';
+
+function Wrapper({ children }: { children: ReactNode }) {
+  return <LocaleProvider>{children}</LocaleProvider>;
+}
+
+function renderWithLocale(ui: ReactElement) {
+  return render(ui, { wrapper: Wrapper });
+}
 import type { StanceAnalysisResult } from '../analysis/types';
 
 describe('SessionSummary', () => {
@@ -41,41 +51,38 @@ describe('SessionSummary', () => {
   ];
 
   it('renders average score', () => {
-    render(<SessionSummary results={mockResults} onClose={vi.fn()} />);
+    renderWithLocale(<SessionSummary results={mockResults} onClose={vi.fn()} />);
 
-    // Average of 75, 80, 82 = 79
     expect(screen.getByText(/79/)).toBeInTheDocument();
   });
 
   it('renders best and worst metrics', () => {
-    render(<SessionSummary results={mockResults} onClose={vi.fn()} />);
+    renderWithLocale(<SessionSummary results={mockResults} onClose={vi.fn()} />);
 
-    expect(screen.getByText(/best/i)).toBeInTheDocument();
-    expect(screen.getByText(/needs work/i)).toBeInTheDocument();
+    expect(screen.getByText(/Best:/)).toBeInTheDocument();
+    expect(screen.getByText(/Needs Work:/)).toBeInTheDocument();
   });
 
   it('shows top recurring cues', () => {
-    render(<SessionSummary results={mockResults} onClose={vi.fn()} />);
+    renderWithLocale(<SessionSummary results={mockResults} onClose={vi.fn()} />);
 
-    // 'Soften knees' appears in all 3, 'Keep hands up' in 2
     expect(screen.getByText(/soften knees/i)).toBeInTheDocument();
     expect(screen.getByText(/keep hands up/i)).toBeInTheDocument();
   });
 
   it('calls onClose when close button clicked', () => {
     const onClose = vi.fn();
-    render(<SessionSummary results={mockResults} onClose={onClose} />);
+    renderWithLocale(<SessionSummary results={mockResults} onClose={onClose} />);
 
-    const button = screen.getByRole('button', { name: /close/i });
+    const button = screen.getByRole('button', { name: /Close/i });
     button.click();
 
     expect(onClose).toHaveBeenCalled();
   });
 
   it('shows session duration', () => {
-    render(<SessionSummary results={mockResults} onClose={vi.fn()} />);
+    renderWithLocale(<SessionSummary results={mockResults} onClose={vi.fn()} />);
 
-    // 3000ms - 1000ms = 2000ms = 2 seconds
     expect(screen.getByText(/2\.0\s*s/)).toBeInTheDocument();
   });
 });
