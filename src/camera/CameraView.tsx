@@ -3,10 +3,11 @@ import { requestCameraPermission, enumerateCameras, stopCameraStream } from './c
 import { createPoseLandmarker } from '../pose/poseLandmarker';
 import type { StanceAnalysisResult } from '../analysis/types';
 import { createRollingWindow } from '../analysis/rollingWindow';
-import { evaluateBaseWidth, evaluateGuardPosition, evaluateHeadPosture, evaluateKneeSoftness, evaluateShoulderHipAlignment, evaluateStanceLength } from '../analysis/stanceMetrics';
+import { evaluateBaseWidth, evaluateGuardPosition, evaluateHeadPosture, evaluateKneeSoftness, evaluateShoulderHipAlignment, evaluateStanceLength, evaluateWeightBalance } from '../analysis/stanceMetrics';
 import { detectStanceOrientation } from '../analysis/stanceOrientation';
 import { normalizeLandmarks } from '../pose/normalizeLandmarks';
 import type { PoseLandmark } from '../analysis/types';
+import { LiveOverlay } from '../ui/LiveOverlay';
 
 interface CameraViewProps {
   onFrame: (result: StanceAnalysisResult) => void;
@@ -20,7 +21,6 @@ interface LandmarkResult {
 
 export function CameraView({ onFrame, stanceSelection, onError }: CameraViewProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const poseLandmarkerRef = useRef<Awaited<ReturnType<typeof createPoseLandmarker>> | null>(null);
   const rollingWindowRef = useRef<ReturnType<typeof createRollingWindow> | null>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -29,6 +29,8 @@ export function CameraView({ onFrame, stanceSelection, onError }: CameraViewProp
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
   const [selectedCameraId, setSelectedCameraId] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const [latestLandmarks, setLatestLandmarks] = useState<PoseLandmark[]>([]);
+  const [videoSize, setVideoSize] = useState({ width: 640, height: 480 });
 
   const analyzeFrame = useCallback((landmarks: LandmarkResult['landmarks']) => {
     const poseLandmarks: PoseLandmark[] = landmarks.map(lm => ({
@@ -38,6 +40,8 @@ export function CameraView({ onFrame, stanceSelection, onError }: CameraViewProp
       visibility: lm.visibility ?? 1,
       presence: lm.presence ?? 1,
     }));
+
+    setLatestLandmarks(poseLandmarks);
 
     const normalized = normalizeLandmarks(poseLandmarks);
     detectStanceOrientation(poseLandmarks, stanceSelection);
@@ -49,6 +53,7 @@ export function CameraView({ onFrame, stanceSelection, onError }: CameraViewProp
       evaluateGuardPosition(poseLandmarks),
       evaluateHeadPosture(poseLandmarks),
       evaluateShoulderHipAlignment(poseLandmarks),
+      evaluateWeightBalance(poseLandmarks),
     ];
 
     const result: StanceAnalysisResult = {
@@ -84,10 +89,25 @@ export function CameraView({ onFrame, stanceSelection, onError }: CameraViewProp
     animationFrameRef.current = requestAnimationFrame(() => processVideoRef.current?.());
   }, [analyzeFrame, isActive]);
 
-  // Update ref when processVideo changes
   useEffect(() => {
     processVideoRef.current = processVideo;
   }, [processVideo]);
+
+  useEffect(() => {
+    if (!videoRef.current || !isActive) return;
+    const video = videoRef.current;
+    const handleResize = () => {
+      if (video.videoWidth && video.videoHeight) {
+        setVideoSize({ width: video.videoWidth, height: video.videoHeight });
+      }
+    };
+    video.addEventListener('loadedmetadata', handleResize);
+    video.addEventListener('resize', handleResize);
+    return () => {
+      video.removeEventListener('loadedmetadata', handleResize);
+      video.removeEventListener('resize', handleResize);
+    };
+  }, [isActive]);
 
   const startCamera = async (deviceId?: string) => {
     try {
@@ -117,12 +137,10 @@ export function CameraView({ onFrame, stanceSelection, onError }: CameraViewProp
 
       setIsActive(true);
 
-      // Initialize pose landmarker
       if (!poseLandmarkerRef.current) {
         poseLandmarkerRef.current = await createPoseLandmarker();
       }
 
-      // Initialize rolling window (5 seconds)
       rollingWindowRef.current = createRollingWindow({ windowMs: 5000 });
 
       animationFrameRef.current = requestAnimationFrame(processVideo);
@@ -140,6 +158,7 @@ export function CameraView({ onFrame, stanceSelection, onError }: CameraViewProp
     stopCameraStream(streamRef.current);
     streamRef.current = null;
     setIsActive(false);
+    setLatestLandmarks([]);
   }, []);
 
   const switchCamera = async (deviceId: string) => {
@@ -152,62 +171,24 @@ export function CameraView({ onFrame, stanceSelection, onError }: CameraViewProp
 
     return () => {
       stopCamera();
-      if (poseLandmarkerRef.current) {
-        // MediaPipe cleanup would go here
-      }
     };
   }, [stopCamera]);
 
-  if (!isActive) {
-    return (
-      <div className="camera-setup">
-        <h2>Camera Setup</h2>
-        <p>Position your camera to capture your full body in frame.</p>
-        <div className="setup-checklist">
-          <label>
-            <input type="checkbox" /> Full body visible
-          </label>
-          <label>
-            <input type="checkbox" /> Hands visible
-          </label>
-          <label>
-            <input type="checkbox" /> Feet visible
-          </label>
-          <label>
-            <input type="checkbox" /> Good lighting
-          </label>
-          <label>
-            <input type="checkbox" /> Stable camera
-          </label>
-        </div>
-        <div className="stance-selector">
-          <label>
-            Stance:
-            <select
-              value={stanceSelection}
-              onChange={() => {
-                // Parent handles stance selection
-              }}
-            >
-              <option value="orthodox">Orthodox (left lead)</option>
-              <option value="southpaw">Southpaw (right lead)</option>
-              <option value="auto">Auto-detect</option>
-            </select>
-          </label>
-        </div>
-        <button onClick={() => startCamera(selectedCameraId || undefined)} disabled={isActive}>
-          Start Camera
-        </button>
-        {error && <div className="error" role="alert">{error}</div>}
-      </div>
-    );
-  }
+  useEffect(() => {
+    startCamera();
+  }, []);
 
   return (
     <div className="camera-view">
       <div className="video-container">
         <video ref={videoRef} autoPlay playsInline muted />
-        <canvas ref={canvasRef} className="overlay" />
+        {latestLandmarks.length > 0 && (
+          <LiveOverlay
+            landmarks={latestLandmarks}
+            videoWidth={videoSize.width}
+            videoHeight={videoSize.height}
+          />
+        )}
       </div>
       <div className="controls">
         <select

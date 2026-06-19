@@ -6,6 +6,7 @@ import {
   evaluateKneeSoftness,
   evaluateShoulderHipAlignment,
   evaluateStanceLength,
+  evaluateWeightBalance,
 } from '../analysis/stanceMetrics';
 import { POSE_LANDMARKS } from '../pose/landmarks';
 import { createStanceLandmarkFixture } from './fixtureHelpers';
@@ -174,6 +175,33 @@ describe('evaluateHeadPosture', () => {
     landmarks[POSE_LANDMARKS.NOSE] = { ...landmarks[POSE_LANDMARKS.NOSE], visibility: 0.1 };
 
     expect(evaluateHeadPosture(landmarks)).toMatchObject({ status: 'unknown', confidence: 0 });
+  });
+});
+
+describe('evaluateWeightBalance', () => {
+  it('scores the default fixture as good weight balance', () => {
+    expect(evaluateWeightBalance(createStanceLandmarkFixture({ stance: 'orthodox' }))).toMatchObject({
+      id: 'weight-balance',
+      status: 'good',
+    });
+  });
+
+  it('warns when hips drift far over one leg', () => {
+    const landmarks = createStanceLandmarkFixture({ stance: 'orthodox' });
+    landmarks[POSE_LANDMARKS.LEFT_HIP] = { ...landmarks[POSE_LANDMARKS.LEFT_HIP], x: 0.35 };
+    landmarks[POSE_LANDMARKS.RIGHT_HIP] = { ...landmarks[POSE_LANDMARKS.RIGHT_HIP], x: 0.38 };
+
+    const metric = evaluateWeightBalance(landmarks);
+
+    expect(metric.status).toBe('warn');
+    expect(metric.correction).toMatch(/center/i);
+  });
+
+  it('returns unknown when hip landmarks are unavailable', () => {
+    const landmarks = createStanceLandmarkFixture({ stance: 'orthodox' });
+    landmarks[POSE_LANDMARKS.LEFT_HIP] = { ...landmarks[POSE_LANDMARKS.LEFT_HIP], visibility: 0.1 };
+
+    expect(evaluateWeightBalance(landmarks)).toMatchObject({ status: 'unknown', confidence: 0 });
   });
 });
 

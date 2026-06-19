@@ -134,10 +134,13 @@ export function createRollingWindow(config: RollingWindowConfig): RollingWindow 
         }
       }
 
-      metricIds.add('stability-ankle');
-      metricIds.add('stability-hip');
-      metricIds.add('stability-head');
-      metricIds.add('stability-hand');
+      const stabilityMap: Record<string, string> = {
+        'base-width': 'Base width',
+        'guard-position': 'Guard position',
+        'head-posture': 'Head posture',
+        'shoulder-hip-alignment': 'Shoulder and hip alignment',
+        'weight-balance': 'Weight balance',
+      };
 
       const metrics: StanceMetric[] = [];
       for (const metricId of metricIds) {
@@ -147,6 +150,11 @@ export function createRollingWindow(config: RollingWindowConfig): RollingWindow 
         } else {
           metrics.push(aggregateMetric(validFrames, metricId));
         }
+      }
+
+      // Add stability metrics for tracked dimensions that have data
+      for (const [trackedId, label] of Object.entries(stabilityMap)) {
+        metrics.push(computeStability(validFrames, trackedId, `Stability: ${label}`));
       }
 
       const sortedMetrics = [...metrics]

@@ -210,6 +210,35 @@ export function evaluateHeadPosture(landmarks: PoseLandmark[]): StanceMetric {
   return buildMetric('head-posture', 'Head posture', 'good', 92, 'Your head looks stacked over your stance.');
 }
 
+export function evaluateWeightBalance(landmarks: PoseLandmark[]): StanceMetric {
+  const leftHip = getVisibleLandmark(landmarks, POSE_LANDMARKS.LEFT_HIP);
+  const rightHip = getVisibleLandmark(landmarks, POSE_LANDMARKS.RIGHT_HIP);
+  const leftAnkle = getVisibleLandmark(landmarks, POSE_LANDMARKS.LEFT_ANKLE);
+  const rightAnkle = getVisibleLandmark(landmarks, POSE_LANDMARKS.RIGHT_ANKLE);
+  const scale = getBodyScale(landmarks);
+
+  if (!leftHip.visible || !rightHip.visible || !leftAnkle.visible || !rightAnkle.visible || scale.shoulderWidth === 0) {
+    return unknownMetric('weight-balance', 'Weight balance', 'Not enough hip or ankle visibility to judge weight balance.');
+  }
+
+  const hipMidX = (leftHip.x + rightHip.x) / 2;
+  const ankleMidX = (leftAnkle.x + rightAnkle.x) / 2;
+  const lateralShift = Math.abs(hipMidX - ankleMidX) / scale.shoulderWidth;
+
+  if (lateralShift > 0.25) {
+    return buildMetric(
+      'weight-balance',
+      'Weight balance',
+      'warn',
+      60,
+      'Your hips drift significantly over one leg.',
+      'Center your weight over your stance so either leg can move freely for checks, teeps, and steps.',
+    );
+  }
+
+  return buildMetric('weight-balance', 'Weight balance', 'good', 92, 'Your weight looks balanced over your stance.');
+}
+
 export function evaluateShoulderHipAlignment(landmarks: PoseLandmark[]): StanceMetric {
   const leftShoulder = getVisibleLandmark(landmarks, POSE_LANDMARKS.LEFT_SHOULDER);
   const rightShoulder = getVisibleLandmark(landmarks, POSE_LANDMARKS.RIGHT_SHOULDER);

@@ -135,26 +135,25 @@ describe('createRollingWindow', () => {
     expect(aggregated!.overallScore).toBeGreaterThan(80);
   });
 
-  it('tracks stability metrics for ankle, hip, head, and hand drift', () => {
+  it('tracks stability metrics for tracked stance dimensions', () => {
     const window = createRollingWindow({ windowMs: 5000 });
     const baseMetrics: StanceMetric[] = [
       { id: 'base-width', label: 'Base width', status: 'good' as StanceMetricStatus, score: 90, confidence: 0.9, message: 'Good', correction: undefined },
-      { id: 'ankle', label: 'Ankle', status: 'good' as StanceMetricStatus, score: 85, confidence: 0.9, message: 'Good', correction: undefined },
-      { id: 'hip', label: 'Hip', status: 'good' as StanceMetricStatus, score: 85, confidence: 0.9, message: 'Good', correction: undefined },
-      { id: 'head', label: 'Head', status: 'good' as StanceMetricStatus, score: 85, confidence: 0.9, message: 'Good', correction: undefined },
-      { id: 'hand', label: 'Hand', status: 'good' as StanceMetricStatus, score: 85, confidence: 0.9, message: 'Good', correction: undefined },
+      { id: 'guard-position', label: 'Guard position', status: 'good' as StanceMetricStatus, score: 90, confidence: 0.9, message: 'Good', correction: undefined },
+      { id: 'head-posture', label: 'Head posture', status: 'good' as StanceMetricStatus, score: 90, confidence: 0.9, message: 'Good', correction: undefined },
+      { id: 'shoulder-hip-alignment', label: 'Shoulder and hip alignment', status: 'good' as StanceMetricStatus, score: 90, confidence: 0.9, message: 'Good', correction: undefined },
+      { id: 'weight-balance', label: 'Weight balance', status: 'good' as StanceMetricStatus, score: 90, confidence: 0.9, message: 'Good', correction: undefined },
     ];
     window.addFrame(createMockResult({ overallScore: 85, metrics: baseMetrics }));
     window.addFrame(createMockResult({ overallScore: 85, metrics: baseMetrics }));
 
     const aggregated = window.getAggregated();
     expect(aggregated).toBeDefined();
-    // Debug: log all metric IDs
-    console.log('Aggregated metrics:', aggregated!.metrics.map(m => m.id));
-    // Should include stability metrics
-    expect(aggregated!.metrics.some(m => m.id === 'stability-ankle')).toBe(true);
-    expect(aggregated!.metrics.some(m => m.id === 'stability-hip')).toBe(true);
-    expect(aggregated!.metrics.some(m => m.id === 'stability-head')).toBe(true);
-    expect(aggregated!.metrics.some(m => m.id === 'stability-hand')).toBe(true);
+    // Should include stability metrics for all tracked dimensions
+    expect(aggregated!.metrics.some(m => m.id === 'stability-base-width')).toBe(true);
+    expect(aggregated!.metrics.some(m => m.id === 'stability-guard-position')).toBe(true);
+    expect(aggregated!.metrics.some(m => m.id === 'stability-head-posture')).toBe(true);
+    expect(aggregated!.metrics.some(m => m.id === 'stability-shoulder-hip-alignment')).toBe(true);
+    expect(aggregated!.metrics.some(m => m.id === 'stability-weight-balance')).toBe(true);
   });
 });
