@@ -1,3 +1,5 @@
+export type StrikeType = 'jab' | 'cross' | 'hook' | 'uppercut' | 'roundhouse' | 'teep' | 'knee' | 'check';
+
 export type StanceSide = 'orthodox' | 'southpaw';
 export type StanceSelection = StanceSide | 'auto';
 

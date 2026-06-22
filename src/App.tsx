@@ -3,11 +3,12 @@ import { CameraView } from './camera/CameraView';
 import { SetupChecklist } from './ui/SetupChecklist';
 import { ScorePanel } from './ui/ScorePanel';
 import { SessionSummary } from './ui/SessionSummary';
+import { StrikeRecorder } from './ui/StrikeRecorder';
 import { LocaleProvider, LocaleToggle, useLocale } from './i18n/LocaleProvider';
 import { useVoiceFeedback } from './audio/useVoiceFeedback';
 import type { StanceAnalysisResult, StanceSelection } from './analysis/types';
 
-type AppState = 'landing' | 'setup' | 'analyzing' | 'summary';
+type AppState = 'landing' | 'setup' | 'analyzing' | 'summary' | 'recording';
 
 function AppContent() {
   const { t } = useLocale();
@@ -59,6 +60,9 @@ function AppContent() {
           <button type="button" onClick={() => setState('setup')}>
             {t('app.startButton')}
           </button>
+          <button type="button" className="secondary-button" onClick={() => setState('recording')}>
+            {t('app.collectData')}
+          </button>
           <p className="privacy-note">{t('app.privacyNote')}</p>
         </section>
       </main>
@@ -103,6 +107,15 @@ function AppContent() {
             {t('app.endSession')}
           </button>
         </div>
+      </main>
+    );
+  }
+
+  if (state === 'recording') {
+    return (
+      <main className="app-shell recording">
+        <LocaleToggle />
+        <StrikeRecorder onClose={() => setState('setup')} />
       </main>
     );
   }

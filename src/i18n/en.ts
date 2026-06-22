@@ -8,6 +8,7 @@ const en: TranslationDict = {
     startButton: 'Start Camera Setup',
     privacyNote: 'Camera frames are processed locally in your browser. No video is uploaded or stored.',
     endSession: 'End Session',
+    collectData: 'Collect Strike Data',
   },
 
   setup: {
@@ -142,6 +143,27 @@ const en: TranslationDict = {
     someDrift: 'Some drift detected',
     unstable: 'Unstable',
     label: 'Stability:',
+  },
+
+  strikes: {
+    jab: 'Jab',
+    cross: 'Cross',
+    hook: 'Hook',
+    uppercut: 'Uppercut',
+    roundhouse: 'Roundhouse',
+    teep: 'Teep',
+    knee: 'Knee',
+    check: 'Check',
+  },
+
+  recorder: {
+    heading: 'Strike Data Collection',
+    record: 'Record',
+    waiting: 'Buffering…',
+    go: 'GO!',
+    recording: 'Recording…',
+    allDone: 'All strikes collected! Export the data for training.',
+    export: 'Export JSON',
   },
 
   voice: {

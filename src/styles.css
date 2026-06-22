@@ -525,3 +525,171 @@ h1 {
   padding: 1rem;
   width: 100%;
 }
+
+/* Secondary button (outline style on landing) */
+.secondary-button {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  display: block;
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+  padding: 0.6rem 1rem !important;
+  width: 100%;
+}
+
+.secondary-button:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Strike Data Recorder
+   ============================== */
+.app-shell.recording {
+  padding: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+.strike-recorder {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.recorder-video-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #000;
+}
+
+.recorder-video-container video {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.recorder-ui {
+  background: rgba(21, 17, 15, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  width: 340px;
+  overflow-y: auto;
+}
+
+.recorder-header {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+}
+
+.recorder-header h2 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.strike-grid {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+.strike-chip {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  color: #e8d8cd;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font: inherit;
+  font-size: 0.85rem;
+  gap: 0.2rem;
+  padding: 0.7rem 0.5rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.strike-chip:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.strike-chip.active {
+  background: rgba(240, 90, 40, 0.2);
+  border-color: #f05a28;
+  color: #f7efe5;
+}
+
+.strike-chip.done {
+  border-color: #4ade80;
+  color: #4ade80;
+  opacity: 0.6;
+}
+
+.strike-chip:disabled {
+  cursor: default;
+}
+
+.strike-name {
+  font-weight: 700;
+}
+
+.strike-count {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+.recorder-status {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 60px;
+}
+
+.countdown {
+  font-size: 3rem;
+  font-weight: 800;
+  color: #f05a28;
+}
+
+.recording-indicator {
+  animation: pulse 0.8s ease-in-out infinite;
+  color: #f87171;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.record-button {
+  font-size: 1.1rem;
+  padding: 0.8rem 2rem;
+}
+
+.record-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.all-done {
+  text-align: center;
+}
+
+.all-done p {
+  color: #4ade80;
+  font-size: 0.9rem;
+  margin: 0 0 0.75rem;
+}
+
+.export-button {
+  font-size: 1rem;
+  padding: 0.8rem 2rem;
+}

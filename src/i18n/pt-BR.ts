@@ -8,6 +8,7 @@ const ptBr: TranslationDict = {
     startButton: 'Iniciar Configuração da Câmera',
     privacyNote: 'Os quadros da câmera são processados localmente no seu navegador. Nenhum vídeo é enviado ou armazenado.',
     endSession: 'Encerrar Sessão',
+    collectData: 'Coletar Dados de Golpes',
   },
 
   setup: {
@@ -142,6 +143,27 @@ const ptBr: TranslationDict = {
     someDrift: 'Algum desvio detectado',
     unstable: 'Instável',
     label: 'Estabilidade:',
+  },
+
+  strikes: {
+    jab: 'Jab',
+    cross: 'Cruzado',
+    hook: 'Gancho',
+    uppercut: 'Upper',
+    roundhouse: 'Roundhouse',
+    teep: 'Teep',
+    knee: 'Joelhada',
+    check: 'Defesa',
+  },
+
+  recorder: {
+    heading: 'Coleta de Dados de Golpes',
+    record: 'Gravar',
+    waiting: 'Preparando…',
+    go: 'JÁ!',
+    recording: 'Gravando…',
+    allDone: 'Todos os golpes coletados! Exporte os dados para treinamento.',
+    export: 'Exportar JSON',
   },
 
   voice: {
