@@ -593,6 +593,12 @@ h1 {
   margin: 0;
 }
 
+.recorder-header-actions {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
 .strike-grid {
   display: grid;
   gap: 0.5rem;
@@ -649,6 +655,13 @@ h1 {
   display: flex;
   justify-content: center;
   min-height: 60px;
+}
+
+.recorder-actions {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .countdown {

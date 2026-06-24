@@ -193,7 +193,14 @@ export function StrikeRecorder({ onClose }: StrikeRecorderProps) {
       <div className="recorder-ui">
         <div className="recorder-header">
           <h2>{t('recorder.heading')}</h2>
-          <button className="close-button" onClick={onClose}>✕</button>
+          <div className="recorder-header-actions">
+            {samples.length > 0 && (
+              <button className="export-button" onClick={exportData}>
+                {t('recorder.export')} ({samples.length})
+              </button>
+            )}
+            <button className="close-button" onClick={onClose}>✕</button>
+          </div>
         </div>
 
         <div className="strike-grid">
@@ -222,21 +229,16 @@ export function StrikeRecorder({ onClose }: StrikeRecorderProps) {
           {phase === 'recording' && (
             <div className="recording-indicator">{t('recorder.recording')}</div>
           )}
-          {phase === 'idle' && isReady && !allComplete && (
-            <button
-              className="record-button"
-              onClick={startRecording}
-              disabled={!bufferFull}
-            >
-              {bufferFull ? t('recorder.record') : t('recorder.waiting')}
-            </button>
-          )}
-          {allComplete && (
-            <div className="all-done">
-              <p>{t('recorder.allDone')}</p>
-              <button className="export-button" onClick={exportData}>
-                {t('recorder.export')}
+          {phase === 'idle' && isReady && (
+            <div className="recorder-actions">
+              <button
+                className="record-button"
+                onClick={startRecording}
+                disabled={!bufferFull || allComplete}
+              >
+                {allComplete ? '✓' : bufferFull ? t('recorder.record') : t('recorder.waiting')}
               </button>
+              {allComplete && <p className="all-done">{t('recorder.allDone')}</p>}
             </div>
           )}
         </div>
